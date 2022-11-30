@@ -28,7 +28,7 @@ public final class PluginTileEntityChest implements IASMPlugin
          * New code:
          *
          */
-        overrideMethod(classNode, method -> method.name.equals(obfuscated ? "" : "getAdjacentChest"),
+        overrideMethod(classNode, method -> method.name.equals(obfuscated ? "func_174911_a" : "getAdjacentChest"),
             "getAdjacentChest", "(Lnet/minecraft/tileentity/TileEntityChest;Lnet/minecraft/util/EnumFacing;)Lnet/minecraft/tileentity/TileEntityChest;", generator -> {
                 generator.visitVarInsn(ALOAD, 0);
                 generator.visitVarInsn(ALOAD, 1);
@@ -44,7 +44,7 @@ public final class PluginTileEntityChest implements IASMPlugin
          *     return Hooks.fixMetadata(super.getBlockMetadata());
          * }
          */
-        addMethod(classNode, obfuscated ? "" : "getBlockMetadata", "()I",
+        addMethod(classNode, obfuscated ? "func_145832_p" : "getBlockMetadata", "()I",
             "fixMetadata", "(I)I", generator -> {
                 generator.visitVarInsn(ALOAD, 0);
                 generator.visitMethodInsn(INVOKESPECIAL, "net/minecraft/tileentity/TileEntity", obfuscated ? "" : "getBlockMetadata", "()I", false);
@@ -60,7 +60,7 @@ public final class PluginTileEntityChest implements IASMPlugin
          *     return Hooks.shouldRefresh(oldState, newState);
          * }
          */
-        addMethod(classNode, obfuscated ? "" : "shouldRefresh", "(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/block/state/IBlockState;)Z",
+        addMethod(classNode, "shouldRefresh", "(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/block/state/IBlockState;)Z",
             "shouldRefresh", "(Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/block/state/IBlockState;)Z", generator -> {
                 generator.visitVarInsn(ALOAD, 3);
                 generator.visitVarInsn(ALOAD, 4);

@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 public final class PluginBlockChest implements IASMPlugin
 {
     @Override
-    public boolean isMethodValid(@Nonnull MethodNode method, boolean obfuscated) { return method.name.equals(obfuscated ? "" : "neighborChanged"); }
+    public boolean isMethodValid(@Nonnull MethodNode method, boolean obfuscated) { return method.name.equals(obfuscated ? "func_189540_a" : "neighborChanged"); }
 
     @Override
     public boolean transform(@Nonnull InsnList instructions, @Nonnull MethodNode method, @Nonnull AbstractInsnNode insn, boolean obfuscated, int index) {
@@ -60,7 +60,7 @@ public final class PluginBlockChest implements IASMPlugin
     @Override
     public boolean transformClass(@Nonnull ClassNode classNode, boolean obfuscated) {
         classNode.interfaces.add("git/jbredwards/friendly_chests/api/IChestMatchable");
-        classNode.methods.removeIf(method -> method.name.equals(obfuscated ? "" : "canPlaceBlockAt"));
+        classNode.methods.removeIf(method -> method.name.equals(obfuscated ? "func_176196_c" : "canPlaceBlockAt"));
         /*
          * getBoundingBox:
          * New code:
@@ -69,7 +69,7 @@ public final class PluginBlockChest implements IASMPlugin
          *     return Hooks.getBoundingBox(state);
          * }
          */
-        overrideMethod(classNode, method -> method.name.equals(obfuscated ? "" : "getBoundingBox"),
+        overrideMethod(classNode, method -> method.name.equals(obfuscated ? "func_185496_a" : "getBoundingBox"),
             "getBoundingBox", "(Lnet/minecraft/block/state/IBlockState;)Lnet/minecraft/util/math/AxisAlignedBB;",
                 generator -> generator.visitVarInsn(ALOAD, 1));
         /*
@@ -80,7 +80,7 @@ public final class PluginBlockChest implements IASMPlugin
          *     Hooks.onBlockAdded(this, worldIn, pos, state);
          * }
          */
-        overrideMethod(classNode, method -> method.name.equals(obfuscated ? "" : "onBlockAdded"),
+        overrideMethod(classNode, method -> method.name.equals(obfuscated ? "func_176213_c" : "onBlockAdded"),
             "onBlockAdded", "(Lnet/minecraft/block/BlockChest;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;)V", generator -> {
                 generator.visitVarInsn(ALOAD, 0);
                 generator.visitVarInsn(ALOAD, 1);
@@ -96,7 +96,7 @@ public final class PluginBlockChest implements IASMPlugin
          *     return Hooks.getStateForPlacement(this, world, pos, facing, placer);
          * }
          */
-        overrideMethod(classNode, method -> method.name.equals(obfuscated ? "" : "getStateForPlacement"),
+        overrideMethod(classNode, method -> method.name.equals(obfuscated ? "func_180642_a" : "getStateForPlacement"),
             "getStateForPlacement", "(Lnet/minecraft/block/BlockChest;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/EnumFacing;Lnet/minecraft/entity/EntityLivingBase;)Lnet/minecraft/block/state/IBlockState;", generator -> {
                 generator.visitVarInsn(ALOAD, 0);
                 generator.visitVarInsn(ALOAD, 1);
@@ -110,13 +110,14 @@ public final class PluginBlockChest implements IASMPlugin
          * New code:
          * public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack)
          * {
-         *     Hooks.onBlockPlacedBy(worldIn, pos, stack);
+         *     Hooks.onBlockPlacedBy(worldIn, pos, state, stack);
          * }
          */
-        overrideMethod(classNode, method -> method.name.equals(obfuscated ? "" : "onBlockPlacedBy"),
-            "onBlockPlacedBy", "(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/item/ItemStack;)V", generator -> {
+        overrideMethod(classNode, method -> method.name.equals(obfuscated ? "func_180633_a" : "onBlockPlacedBy"),
+            "onBlockPlacedBy", "(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/item/ItemStack;)V", generator -> {
                 generator.visitVarInsn(ALOAD, 1);
                 generator.visitVarInsn(ALOAD, 2);
+                generator.visitVarInsn(ALOAD, 3);
                 generator.visitVarInsn(ALOAD, 5);
             }
         );
@@ -129,7 +130,7 @@ public final class PluginBlockChest implements IASMPlugin
          *     return Hooks.getContainer(this, worldIn, pos, allowBlocking);
          * }
          */
-        overrideMethod(classNode, method -> method.name.equals(obfuscated? "" : "getContainer"),
+        overrideMethod(classNode, method -> method.name.equals(obfuscated? "func_189418_a" : "getContainer"),
             "getContainer", "(Lnet/minecraft/block/BlockChest;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Z)Lnet/minecraft/world/ILockableContainer;", generator -> {
                 generator.visitVarInsn(ALOAD, 0);
                 generator.visitVarInsn(ALOAD, 1);
@@ -145,7 +146,7 @@ public final class PluginBlockChest implements IASMPlugin
          *     return Hooks.getStateFromMeta(this, meta);
          * }
          */
-        overrideMethod(classNode, method -> method.name.equals(obfuscated? "" : "getStateFromMeta"),
+        overrideMethod(classNode, method -> method.name.equals(obfuscated? "func_176203_a" : "getStateFromMeta"),
             "getStateFromMeta", "(Lnet/minecraft/block/BlockChest;I)Lnet/minecraft/block/state/IBlockState;", generator -> {
                 generator.visitVarInsn(ALOAD, 0);
                 generator.visitVarInsn(ILOAD, 1);
@@ -159,7 +160,7 @@ public final class PluginBlockChest implements IASMPlugin
          *     return Hooks.getMetaFromState(state);
          * }
          */
-        overrideMethod(classNode, method -> method.name.equals(obfuscated? "" : "getMetaFromState"),
+        overrideMethod(classNode, method -> method.name.equals(obfuscated? "func_176201_c" : "getMetaFromState"),
             "getMetaFromState", "(Lnet/minecraft/block/state/IBlockState;)I",
                 generator -> generator.visitVarInsn(ALOAD, 1));
         /*
@@ -170,7 +171,7 @@ public final class PluginBlockChest implements IASMPlugin
          *     return Hooks.createBlockState(this);
          * }
          */
-        overrideMethod(classNode, method -> method.name.equals(obfuscated? "" : "createBlockState"),
+        overrideMethod(classNode, method -> method.name.equals(obfuscated? "func_180661_e" : "createBlockState"),
             "createBlockState", "(Lnet/minecraft/block/BlockChest;)Lnet/minecraft/block/state/BlockStateContainer;",
                 generator -> generator.visitVarInsn(ALOAD, 0));
 
@@ -283,7 +284,8 @@ public final class PluginBlockChest implements IASMPlugin
             }
         }
 
-        public static void onBlockPlacedBy(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull ItemStack stack) {
+        public static void onBlockPlacedBy(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull ItemStack stack) {
+            if(world.isRemote) state.getBlock().onBlockAdded(world, pos, state); //sync client early cause rendering glitch
             if(stack.hasDisplayName()) {
                 final @Nullable TileEntity tile = world.getTileEntity(pos);
                 if(tile instanceof TileEntityChest) ((TileEntityChest)tile).setCustomName(stack.getDisplayName());
@@ -295,8 +297,7 @@ public final class PluginBlockChest implements IASMPlugin
         public static EnumFacing getDirectionToAttach(@Nonnull BlockChest block, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull EnumFacing facing) {
             final IBlockState state = world.getBlockState(pos.offset(facing));
             return IChestMatchable.chestMatches(block, world, block.getDefaultState(), pos, state, pos.offset(facing))
-                    && state.getValue(ChestType.TYPE) == ChestType.SINGLE
-                            ? state.getValue(BlockChest.FACING) : null;
+                    && state.getValue(ChestType.TYPE) == ChestType.SINGLE ? state.getValue(BlockChest.FACING) : null;
         }
     }
 }
