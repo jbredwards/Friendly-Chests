@@ -47,7 +47,7 @@ public final class PluginTileEntityChest implements IASMPlugin
         addMethod(classNode, obfuscated ? "func_145832_p" : "getBlockMetadata", "()I",
             "fixMetadata", "(I)I", generator -> {
                 generator.visitVarInsn(ALOAD, 0);
-                generator.visitMethodInsn(INVOKESPECIAL, "net/minecraft/tileentity/TileEntity", obfuscated ? "" : "getBlockMetadata", "()I", false);
+                generator.visitMethodInsn(INVOKESPECIAL, "net/minecraft/tileentity/TileEntity", obfuscated ? "func_145832_p" : "getBlockMetadata", "()I", false);
             }
         );
         /*

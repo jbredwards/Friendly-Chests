@@ -71,6 +71,20 @@ public final class PluginQuarkItemChest implements IASMPlugin
             newState = newState.withProperty(BlockChest.FACING, facing).withProperty(ChestType.TYPE, type);
             if(!world.setBlockState(pos, newState, 11)) return false;
             final IBlockState state = world.getBlockState(pos);
+
+            //change neighbor data
+            if(type != ChestType.SINGLE) {
+                final BlockPos offset = pos.offset(ChestType.getDirectionToAttached(state));
+                final IBlockState attachedTo = world.getBlockState(offset);
+
+                //update neighbor chest
+                if(attachedTo.getValue(ChestType.TYPE) == ChestType.SINGLE)
+                    world.setBlockState(offset, attachedTo
+                            .withProperty(BlockChest.FACING, state.getValue(BlockChest.FACING))
+                            .withProperty(ChestType.TYPE, type.getOpposite()));
+            }
+
+            //set tile entity data
             if(state.getBlock() == item.getBlock()) {
                 ItemBlock.setTileEntityNBT(world, player, pos, stack);
                 final TileEntity tile = world.getTileEntity(pos);

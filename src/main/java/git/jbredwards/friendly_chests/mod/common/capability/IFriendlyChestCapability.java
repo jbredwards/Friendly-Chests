@@ -2,7 +2,6 @@ package git.jbredwards.friendly_chests.mod.common.capability;
 
 import git.jbredwards.fluidlogged_api.api.capability.CapabilityProvider;
 import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTPrimitive;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
@@ -30,25 +29,12 @@ public interface IFriendlyChestCapability
     @Nonnull Capability<IFriendlyChestCapability> CAPABILITY = null;
     @Nonnull ResourceLocation CAPABILITY_ID = new ResourceLocation("friendly_chests", "fixed");
 
-    boolean getFlag();
-    void setFlag(boolean flagIn);
-
     @SubscribeEvent
     static void attachCapability(@Nonnull AttachCapabilitiesEvent<Chunk> event) {
         event.addCapability(CAPABILITY_ID, new CapabilityProvider<>(CAPABILITY));
     }
 
-    class Impl implements IFriendlyChestCapability
-    {
-        boolean flag;
-
-        @Override
-        public boolean getFlag() { return flag; }
-
-        @Override
-        public void setFlag(boolean flagIn) { flag = flagIn; }
-    }
-
+    class Impl implements IFriendlyChestCapability { }
     enum Storage implements Capability.IStorage<IFriendlyChestCapability>
     {
         INSTANCE;
@@ -56,12 +42,10 @@ public interface IFriendlyChestCapability
         @Nonnull
         @Override
         public NBTBase writeNBT(@Nonnull Capability<IFriendlyChestCapability> capability, @Nonnull IFriendlyChestCapability instance, @Nullable EnumFacing side) {
-            return new NBTTagInt(instance.getFlag() ? 1 : 0);
+            return new NBTTagInt(1);
         }
 
         @Override
-        public void readNBT(@Nonnull Capability<IFriendlyChestCapability> capability, @Nonnull IFriendlyChestCapability instance, @Nullable EnumFacing side, @Nullable NBTBase nbt) {
-            if(nbt instanceof NBTPrimitive) instance.setFlag(((NBTPrimitive)nbt).getInt() != 0);
-        }
+        public void readNBT(@Nonnull Capability<IFriendlyChestCapability> capability, @Nonnull IFriendlyChestCapability instance, @Nullable EnumFacing side, @Nullable NBTBase nbt) {}
     }
 }
