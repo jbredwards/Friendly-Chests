@@ -2,8 +2,10 @@ package git.jbredwards.friendly_chests.mod.asm;
 
 import git.jbredwards.fluidlogged_api.api.asm.AbstractClassTransformer;
 import git.jbredwards.fluidlogged_api.api.asm.BasicLoadingPlugin;
-import git.jbredwards.friendly_chests.mod.asm.plugins.PluginBlockChest;
-import git.jbredwards.friendly_chests.mod.asm.plugins.PluginTileEntityChest;
+import git.jbredwards.friendly_chests.mod.asm.plugins.forge.PluginVanillaDoubleChestItemHandler;
+import git.jbredwards.friendly_chests.mod.asm.plugins.vanilla.PluginBlockChest;
+import git.jbredwards.friendly_chests.mod.asm.plugins.vanilla.PluginTileEntityChest;
+import git.jbredwards.friendly_chests.mod.asm.plugins.vanilla.PluginTileEntityChestRenderer;
 
 import javax.annotation.Nonnull;
 
@@ -21,9 +23,13 @@ public final class ASMHandler implements BasicLoadingPlugin
     public static final class Transformer extends AbstractClassTransformer
     {
         public Transformer() {
+            //modded
+            //plugins.put("", )
             //vanilla
             plugins.put("net.minecraft.block.BlockChest", new PluginBlockChest());
-            plugins.put("net.minecraft.tilentity.TileEntityChest", new PluginTileEntityChest());
+            plugins.put("net.minecraft.tileentity.TileEntityChest", new PluginTileEntityChest());
+            //forge
+            plugins.put("net.minecraftforge.items.VanillaDoubleChestItemHandler", new PluginVanillaDoubleChestItemHandler());
         }
 
         @Nonnull

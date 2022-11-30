@@ -1,8 +1,8 @@
-package git.jbredwards.friendly_chests.mod.asm.plugins;
+package git.jbredwards.friendly_chests.mod.asm.plugins.vanilla;
 
 import git.jbredwards.fluidlogged_api.api.asm.IASMPlugin;
 import git.jbredwards.friendly_chests.api.ChestType;
-import net.minecraft.block.Block;
+import git.jbredwards.friendly_chests.api.IChestMatchable;
 import net.minecraft.block.BlockChest;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -59,6 +59,7 @@ public final class PluginBlockChest implements IASMPlugin
 
     @Override
     public boolean transformClass(@Nonnull ClassNode classNode, boolean obfuscated) {
+        classNode.interfaces.add("git/jbredwards/friendly_chests/api/IChestMatchable");
         classNode.methods.removeIf(method -> method.name.equals(obfuscated ? "" : "canPlaceBlockAt"));
         /*
          * getBoundingBox:
@@ -120,21 +121,6 @@ public final class PluginBlockChest implements IASMPlugin
             }
         );
         /*
-         * isDoubleChest:
-         * New code:
-         * private boolean isDoubleChest(World worldIn, BlockPos pos)
-         * {
-         *     return Hooks.isDoubleChest(this, worldIn, pos);
-         * }
-         */
-        overrideMethod(classNode, method -> method.name.equals(obfuscated ? "" : "isDoubleChest"),
-            "isDoubleChest", "(Lnet/minecraft/block/BlockChest;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)Z", generator -> {
-                generator.visitVarInsn(ALOAD, 0);
-                generator.visitVarInsn(ALOAD, 1);
-                generator.visitVarInsn(ALOAD, 2);
-            }
-        );
-        /*
          * getContainer:
          * New code:
          * @Nullable
@@ -154,8 +140,39 @@ public final class PluginBlockChest implements IASMPlugin
         /*
          * getStateFromMeta:
          * New code:
-         *
+         * public IBlockState getStateFromMeta(int meta)
+         * {
+         *     return Hooks.getStateFromMeta(this, meta);
+         * }
          */
+        overrideMethod(classNode, method -> method.name.equals(obfuscated? "" : "getStateFromMeta"),
+            "getStateFromMeta", "(Lnet/minecraft/block/BlockChest;I)Lnet/minecraft/block/state/IBlockState;", generator -> {
+                generator.visitVarInsn(ALOAD, 0);
+                generator.visitVarInsn(ILOAD, 1);
+            }
+        );
+        /*
+         * getMetaFromState:
+         * New code:
+         * public int getMetaFromState(IBlockState state)
+         * {
+         *     return Hooks.getMetaFromState(state);
+         * }
+         */
+        overrideMethod(classNode, method -> method.name.equals(obfuscated? "" : "getMetaFromState"),
+            "getMetaFromState", "(Lnet/minecraft/block/state/IBlockState;)I",
+                generator -> generator.visitVarInsn(ALOAD, 1));
+        /*
+         * createBlockState:
+         * New code:
+         * public BlockStateContainer createBlockState()
+         * {
+         *     return Hooks.createBlockState(this);
+         * }
+         */
+        overrideMethod(classNode, method -> method.name.equals(obfuscated? "" : "createBlockState"),
+            "createBlockState", "(Lnet/minecraft/block/BlockChest;)Lnet/minecraft/block/state/BlockStateContainer;",
+                generator -> generator.visitVarInsn(ALOAD, 0));
 
         return true;
     }
@@ -206,25 +223,21 @@ public final class PluginBlockChest implements IASMPlugin
         }
 
         public static int getMetaFromState(@Nonnull IBlockState state) {
-            return state.getValue(BlockChest.FACING).getIndex()
-                    | state.getValue(ChestType.TYPE).ordinal() << 3;
+            return state.getValue(BlockChest.FACING).getHorizontalIndex()
+                    | state.getValue(ChestType.TYPE).ordinal() << 2;
         }
 
         @Nonnull
         public static IBlockState getStateFromMeta(@Nonnull BlockChest block, int meta) {
-            EnumFacing facing = EnumFacing.byIndex(meta);
-            if(facing.getAxis() == EnumFacing.Axis.Y)
-                facing = EnumFacing.NORTH;
-
             return block.getDefaultState()
-                    .withProperty(BlockChest.FACING, facing)
-                    .withProperty(ChestType.TYPE, ChestType.fromOrdinal(meta >> 3));
+                    .withProperty(BlockChest.FACING, EnumFacing.byHorizontalIndex(meta & 3))
+                    .withProperty(ChestType.TYPE, ChestType.fromOrdinal(meta >> 2));
         }
 
         @Nonnull
         public static IBlockState getStateForPlacement(@Nonnull BlockChest block, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull EnumFacing side, @Nonnull EntityLivingBase placer) {
             final boolean isSneaking = placer.isSneaking();
-            EnumFacing facing = placer.getHorizontalFacing();
+            EnumFacing facing = placer.getHorizontalFacing().getOpposite();
             ChestType type = ChestType.SINGLE;
 
             if(side.getAxis().isHorizontal() && isSneaking) {
@@ -243,36 +256,24 @@ public final class PluginBlockChest implements IASMPlugin
             return block.getDefaultState().withProperty(BlockChest.FACING, facing).withProperty(ChestType.TYPE, type);
         }
 
-        public static boolean isDoubleChest(@Nonnull BlockChest block, @Nonnull World world, @Nonnull BlockPos pos) {
-            final IBlockState state = world.getBlockState(pos);
-            return Block.isEqualTo(block, state.getBlock()) && state.getValue(ChestType.TYPE) == ChestType.SINGLE;
-        }
-
         public static void neighborChanged(@Nonnull BlockChest block, @Nonnull IBlockState state, @Nonnull World world, @Nonnull BlockPos pos) {
-            if(state.getValue(ChestType.TYPE) != ChestType.SINGLE && !Block.isEqualTo(block, world.getBlockState(pos.offset(ChestType.getDirectionToAttached(state))).getBlock()))
-                world.setBlockState(pos, state.withProperty(ChestType.TYPE, ChestType.SINGLE));
+            if(state.getValue(ChestType.TYPE) != ChestType.SINGLE) {
+                final BlockPos otherPos = pos.offset(ChestType.getDirectionToAttached(state));
+                final IBlockState other = world.getBlockState(otherPos);
+                if(!IChestMatchable.chestMatches(block, world, state, pos, other, otherPos))
+                    world.setBlockState(pos, state.withProperty(ChestType.TYPE, ChestType.SINGLE));
+            }
         }
 
         public static void onBlockAdded(@Nonnull BlockChest block, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state) {
             final ChestType type = state.getValue(ChestType.TYPE);
-
-            //update neighbors that were connected to the chest previously here
-            if(type == ChestType.SINGLE) {
-                for(EnumFacing side : EnumFacing.HORIZONTALS) {
-                    final BlockPos neighborPos = pos.offset(side);
-                    final IBlockState neighbor = world.getBlockState(neighborPos);
-
-                    if(Block.isEqualTo(block, neighbor.getBlock()) && pos.equals(neighborPos.offset(ChestType.getDirectionToAttached(neighbor))))
-                        world.setBlockState(neighborPos, neighbor.withProperty(ChestType.TYPE, ChestType.SINGLE));
-                }
-            }
-
-            else {
+            if(type != ChestType.SINGLE) {
                 final BlockPos offset = pos.offset(ChestType.getDirectionToAttached(state));
                 final IBlockState attachedTo = world.getBlockState(offset);
 
                 //update neighbor chest
-                if(Block.isEqualTo(block, attachedTo.getBlock()))
+                if(IChestMatchable.chestMatches(block, world, state, pos, attachedTo, offset)
+                && attachedTo.getValue(ChestType.TYPE) == ChestType.SINGLE)
                     world.setBlockState(offset, attachedTo
                             .withProperty(BlockChest.FACING, state.getValue(BlockChest.FACING))
                             .withProperty(ChestType.TYPE, type.getOpposite()));
@@ -293,8 +294,9 @@ public final class PluginBlockChest implements IASMPlugin
         @Nullable
         public static EnumFacing getDirectionToAttach(@Nonnull BlockChest block, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull EnumFacing facing) {
             final IBlockState state = world.getBlockState(pos.offset(facing));
-            return Block.isEqualTo(block, state.getBlock()) && state.getValue(ChestType.TYPE) == ChestType.SINGLE
-                    ? state.getValue(BlockChest.FACING) : null;
+            return IChestMatchable.chestMatches(block, world, block.getDefaultState(), pos, state, pos.offset(facing))
+                    && state.getValue(ChestType.TYPE) == ChestType.SINGLE
+                            ? state.getValue(BlockChest.FACING) : null;
         }
     }
 }
