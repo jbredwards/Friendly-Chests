@@ -19,7 +19,6 @@ public final class PluginQuarkBlockChest implements IASMPlugin
 {
     @Override
     public boolean transformClass(@Nonnull ClassNode classNode, boolean obfuscated) {
-        classNode.interfaces.add("git/jbredwards/friendly_chests/api/IChestMatchable");
         classNode.methods.removeIf(method
                 -> method.name.equals(obfuscated ? "func_185496_a" : "getBoundingBox")
                 || method.name.equals(obfuscated ? "func_180633_a" : "onBlockPlacedBy")

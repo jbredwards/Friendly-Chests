@@ -23,6 +23,7 @@ public final class ASMHandler implements BasicLoadingPlugin
     {
         public Transformer() {
             //modded
+            plugins.put("noobanidus.mods.lootr.block.LootrChestBlock", new PluginLootr());
             plugins.put("vazkii.quark.decoration.block.BlockCustomChest", new PluginQuarkBlockChest());
             plugins.put("vazkii.quark.decoration.item.ItemChestBlock", new PluginQuarkItemChest());
             plugins.put("vazkii.quark.decoration.tile.TileCustomChest", new PluginQuarkTileChest());
