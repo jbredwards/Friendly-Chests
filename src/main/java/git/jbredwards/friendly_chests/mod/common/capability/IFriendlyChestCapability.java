@@ -2,10 +2,12 @@ package git.jbredwards.friendly_chests.mod.common.capability;
 
 import git.jbredwards.fluidlogged_api.api.capability.CapabilityProvider;
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTPrimitive;
 import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -29,12 +31,31 @@ public interface IFriendlyChestCapability
     @Nonnull Capability<IFriendlyChestCapability> CAPABILITY = null;
     @Nonnull ResourceLocation CAPABILITY_ID = new ResourceLocation("friendly_chests", "fixed");
 
-    @SubscribeEvent
-    static void attachCapability(@Nonnull AttachCapabilitiesEvent<Chunk> event) {
-        event.addCapability(CAPABILITY_ID, new CapabilityProvider<>(CAPABILITY));
+    boolean isFixed();
+    void setFixed(boolean fixedIn);
+
+    @SuppressWarnings("ConstantConditions")
+    @Nullable
+    static IFriendlyChestCapability get(@Nullable TileEntity tile) {
+        return tile != null && tile.hasCapability(CAPABILITY, null) ? tile.getCapability(CAPABILITY, null) : null;
     }
 
-    class Impl implements IFriendlyChestCapability { }
+    @SubscribeEvent
+    static void attachCapability(@Nonnull AttachCapabilitiesEvent<TileEntity> event) {
+        if(event.getObject() instanceof TileEntityChest) event.addCapability(CAPABILITY_ID, new CapabilityProvider<>(CAPABILITY));
+    }
+
+    class Impl implements IFriendlyChestCapability
+    {
+        boolean fixed = true;
+
+        @Override
+        public boolean isFixed() { return fixed; }
+
+        @Override
+        public void setFixed(boolean fixedIn) { fixed = fixedIn; }
+    }
+
     enum Storage implements Capability.IStorage<IFriendlyChestCapability>
     {
         INSTANCE;
@@ -42,10 +63,12 @@ public interface IFriendlyChestCapability
         @Nonnull
         @Override
         public NBTBase writeNBT(@Nonnull Capability<IFriendlyChestCapability> capability, @Nonnull IFriendlyChestCapability instance, @Nullable EnumFacing side) {
-            return new NBTTagInt(1);
+            return new NBTTagInt(instance.isFixed() ? 1 : 0);
         }
 
         @Override
-        public void readNBT(@Nonnull Capability<IFriendlyChestCapability> capability, @Nonnull IFriendlyChestCapability instance, @Nullable EnumFacing side, @Nullable NBTBase nbt) {}
+        public void readNBT(@Nonnull Capability<IFriendlyChestCapability> capability, @Nonnull IFriendlyChestCapability instance, @Nullable EnumFacing side, @Nullable NBTBase nbt) {
+            instance.setFixed(nbt instanceof NBTPrimitive && ((NBTPrimitive)nbt).getInt() != 0);
+        }
     }
 }

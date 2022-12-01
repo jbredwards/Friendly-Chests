@@ -26,7 +26,11 @@ public final class PluginTileEntityChest implements IASMPlugin
         /*
          * getAdjacentChest:
          * New code:
-         *
+         * @Nullable
+         * protected TileEntityChest getAdjacentChest(EnumFacing side)
+         * {
+         *     return Hooks.getAdjacentChest(this, side);
+         * }
          */
         overrideMethod(classNode, method -> method.name.equals(obfuscated ? "func_174911_a" : "getAdjacentChest"),
             "getAdjacentChest", "(Lnet/minecraft/tileentity/TileEntityChest;Lnet/minecraft/util/EnumFacing;)Lnet/minecraft/tileentity/TileEntityChest;", generator -> {
@@ -45,7 +49,8 @@ public final class PluginTileEntityChest implements IASMPlugin
          * }
          */
         addMethod(classNode, obfuscated ? "func_145832_p" : "getBlockMetadata", "()I",
-            "fixMetadata", "(I)I", generator -> {
+            "fixMetadata", "(Lnet/minecraft/tileentity/TileEntityChest;I)I", generator -> {
+                generator.visitVarInsn(ALOAD, 0);
                 generator.visitVarInsn(ALOAD, 0);
                 generator.visitMethodInsn(INVOKESPECIAL, "net/minecraft/tileentity/TileEntity", obfuscated ? "func_145832_p" : "getBlockMetadata", "()I", false);
             }
@@ -95,7 +100,9 @@ public final class PluginTileEntityChest implements IASMPlugin
             return null;
         }
 
-        public static int fixMetadata(int meta) { return EnumFacing.byHorizontalIndex(meta & 3).getIndex(); }
+        public static int fixMetadata(@Nonnull TileEntityChest tile, int meta) {
+            return tile.getBlockType() instanceof BlockChest ? EnumFacing.byHorizontalIndex(meta & 3).getIndex() : meta;
+        }
 
         public static boolean shouldRefresh(@Nonnull IBlockState oldState, @Nonnull IBlockState newState) {
             return oldState.getBlock() != newState.getBlock();
