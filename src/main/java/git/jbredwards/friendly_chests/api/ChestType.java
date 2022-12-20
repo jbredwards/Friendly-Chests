@@ -39,11 +39,15 @@ public enum ChestType implements IStringSerializable
     public ChestType getOpposite() { return ChestType.values()[opposite]; }
 
     @Nonnull
-    public static ChestType fromOrdinal(int ordinal) { return values()[ordinal % values().length]; }
+    public static ChestType fromIndex(int index) { return values()[index % values().length]; }
+
+    @Nonnull
+    public EnumFacing rotate(@Nonnull EnumFacing facing) {
+        return this == LEFT ? facing.rotateY() : facing.rotateYCCW();
+    }
 
     @Nonnull
     public static EnumFacing getDirectionToAttached(@Nonnull IBlockState state) {
-        final EnumFacing facing = state.getValue(BlockChest.FACING);
-        return state.getValue(TYPE) == LEFT ? facing.rotateY() : facing.rotateYCCW();
+        return state.getValue(TYPE).rotate(state.getValue(BlockChest.FACING));
     }
 }

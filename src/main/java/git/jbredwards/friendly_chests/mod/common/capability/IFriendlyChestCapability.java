@@ -34,7 +34,6 @@ public interface IFriendlyChestCapability
     boolean isFixed();
     void setFixed(boolean fixedIn);
 
-    @SuppressWarnings("ConstantConditions")
     @Nullable
     static IFriendlyChestCapability get(@Nullable TileEntity tile) {
         return tile != null && tile.hasCapability(CAPABILITY, null) ? tile.getCapability(CAPABILITY, null) : null;

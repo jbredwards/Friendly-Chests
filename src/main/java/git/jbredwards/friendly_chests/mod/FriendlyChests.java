@@ -16,7 +16,7 @@ import javax.annotation.Nonnull;
  * @author jbred
  *
  */
-@Mod(modid = "friendly_chests", name = "Friendly Chests", version = "1.0.0")
+@Mod(modid = "friendly_chests", name = "Friendly Chests", version = "1.0.1")
 public final class FriendlyChests
 {
     @Mod.EventHandler

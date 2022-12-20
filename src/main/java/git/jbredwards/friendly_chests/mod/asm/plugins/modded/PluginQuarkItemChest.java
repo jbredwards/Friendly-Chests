@@ -64,8 +64,12 @@ public final class PluginQuarkItemChest implements IASMPlugin
             }
 
             if(type == ChestType.SINGLE && !isSneaking) {
-                if(facing == getDirectionToAttach(myType, item.getBlock(), world, pos, facing.rotateY())) type = ChestType.LEFT;
-                else if(facing == getDirectionToAttach(myType, item.getBlock(), world, pos, facing.rotateYCCW())) type = ChestType.RIGHT;
+                final EnumFacing left = getDirectionToAttach(myType, item.getBlock(), world, pos, facing.rotateY());
+                if(left != null && facing != left.getOpposite()) type = ChestType.LEFT;
+                else {
+                    final EnumFacing right = getDirectionToAttach(myType, item.getBlock(), world, pos, facing.rotateYCCW());
+                    if(right != null && facing != right.getOpposite()) type = ChestType.RIGHT;
+                }
             }
 
             newState = newState.withProperty(BlockChest.FACING, facing).withProperty(ChestType.TYPE, type);
@@ -74,13 +78,14 @@ public final class PluginQuarkItemChest implements IASMPlugin
 
             //change neighbor data
             if(type != ChestType.SINGLE) {
-                final BlockPos offset = pos.offset(ChestType.getDirectionToAttached(state));
+                final EnumFacing chestFacing = state.getValue(BlockChest.FACING);
+                final BlockPos offset = pos.offset(type.rotate(chestFacing));
                 final IBlockState attachedTo = world.getBlockState(offset);
 
                 //update neighbor chest
                 if(attachedTo.getValue(ChestType.TYPE) == ChestType.SINGLE)
                     world.setBlockState(offset, attachedTo
-                            .withProperty(BlockChest.FACING, state.getValue(BlockChest.FACING))
+                            .withProperty(BlockChest.FACING, chestFacing)
                             .withProperty(ChestType.TYPE, type.getOpposite()));
             }
 

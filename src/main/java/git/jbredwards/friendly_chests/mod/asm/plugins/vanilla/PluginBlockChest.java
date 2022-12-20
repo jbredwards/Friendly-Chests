@@ -14,6 +14,7 @@ import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.ILockableContainer;
 import net.minecraft.world.World;
 import org.objectweb.asm.tree.*;
@@ -174,6 +175,21 @@ public final class PluginBlockChest implements IASMPlugin
         overrideMethod(classNode, method -> method.name.equals(obfuscated? "func_180661_e" : "createBlockState"),
             "createBlockState", "(Lnet/minecraft/block/BlockChest;)Lnet/minecraft/block/state/BlockStateContainer;",
                 generator -> generator.visitVarInsn(ALOAD, 0));
+        /*
+         * onNeighborChange:
+         * New code:
+         * public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor)
+         * {
+         *     Hooks.onNeighborChange(world, pos, neighbor);
+         * }
+         */
+        addMethod(classNode, "onNeighborChange", "(Lnet/minecraft/world/IBlockAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/BlockPos;)V",
+            "onNeighborChange", "(Lnet/minecraft/world/IBlockAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/BlockPos;)V", generator -> {
+                generator.visitVarInsn(ALOAD, 1);
+                generator.visitVarInsn(ALOAD, 2);
+                generator.visitVarInsn(ALOAD, 3);
+            }
+        );
 
         return true;
     }
@@ -212,7 +228,7 @@ public final class PluginBlockChest implements IASMPlugin
             final ChestType type = state.getValue(ChestType.TYPE);
             if(type == ChestType.SINGLE) return container;
 
-            final BlockPos neighborPos = pos.offset(ChestType.getDirectionToAttached(state));
+            final BlockPos neighborPos = pos.offset(type.rotate(state.getValue(BlockChest.FACING)));
             if(!allowBlocking && block.isBlocked(world, neighborPos)) return null;
 
             final ILockableContainer neighbor = (ILockableContainer)world.getTileEntity(neighborPos);
@@ -232,7 +248,7 @@ public final class PluginBlockChest implements IASMPlugin
         public static IBlockState getStateFromMeta(@Nonnull BlockChest block, int meta) {
             return block.getDefaultState()
                     .withProperty(BlockChest.FACING, EnumFacing.byHorizontalIndex(meta & 3))
-                    .withProperty(ChestType.TYPE, ChestType.fromOrdinal(meta >> 2));
+                    .withProperty(ChestType.TYPE, ChestType.fromIndex(meta >> 2));
         }
 
         @Nonnull
@@ -250,8 +266,12 @@ public final class PluginBlockChest implements IASMPlugin
             }
 
             if(type == ChestType.SINGLE && !isSneaking) {
-                if(facing == getDirectionToAttach(block, world, pos, facing.rotateY())) type = ChestType.LEFT;
-                else if(facing == getDirectionToAttach(block, world, pos, facing.rotateYCCW())) type = ChestType.RIGHT;
+                final EnumFacing left = getDirectionToAttach(block, world, pos, facing.rotateY());
+                if(left != null && facing != left.getOpposite()) type = ChestType.LEFT;
+                else {
+                    final EnumFacing right = getDirectionToAttach(block, world, pos, facing.rotateYCCW());
+                    if(right != null && facing != right.getOpposite()) type = ChestType.RIGHT;
+                }
             }
 
             return block.getDefaultState().withProperty(BlockChest.FACING, facing).withProperty(ChestType.TYPE, type);
@@ -269,14 +289,15 @@ public final class PluginBlockChest implements IASMPlugin
         public static void onBlockAdded(@Nonnull BlockChest block, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state) {
             final ChestType type = state.getValue(ChestType.TYPE);
             if(type != ChestType.SINGLE) {
-                final BlockPos offset = pos.offset(ChestType.getDirectionToAttached(state));
+                final EnumFacing facing = state.getValue(BlockChest.FACING);
+                final BlockPos offset = pos.offset(type.rotate(facing));
                 final IBlockState attachedTo = world.getBlockState(offset);
 
                 //update neighbor chest
                 if(IChestMatchable.chestMatches(block, world, state, pos, attachedTo, offset)
                 && attachedTo.getValue(ChestType.TYPE) == ChestType.SINGLE)
                     world.setBlockState(offset, attachedTo
-                            .withProperty(BlockChest.FACING, state.getValue(BlockChest.FACING))
+                            .withProperty(BlockChest.FACING, facing)
                             .withProperty(ChestType.TYPE, type.getOpposite()));
 
                 //update this chest
@@ -289,6 +310,16 @@ public final class PluginBlockChest implements IASMPlugin
             if(stack.hasDisplayName()) {
                 final @Nullable TileEntity tile = world.getTileEntity(pos);
                 if(tile instanceof TileEntityChest) ((TileEntityChest)tile).setCustomName(stack.getDisplayName());
+            }
+        }
+
+        public static void onNeighborChange(@Nonnull IBlockAccess world, @Nonnull BlockPos pos, @Nonnull BlockPos neighbor) {
+            if(world instanceof World && ((World)world).isRemote) {
+                final TileEntity tile = world.getTileEntity(pos);
+                if(tile instanceof TileEntityChest) {
+                    if(pos.offset(EnumFacing.NORTH).equals(neighbor)) ((TileEntityChest)tile).adjacentChestZNeg = null;
+                    if(pos.offset(EnumFacing.WEST).equals(neighbor)) ((TileEntityChest)tile).adjacentChestXNeg = null;
+                }
             }
         }
 

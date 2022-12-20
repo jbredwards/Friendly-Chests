@@ -1,0 +1,13 @@
+[{
+  "modid": "friendly_chests",
+  "name": "Friendly Chests",
+  "description": "A Minecraft mod that lets chests stop social distancing!",
+  "version": "${version}",
+  "mcversion": "1.12.2",
+  "url": "https://github.com/jbredwards/Friendly-Chests",
+  "updateUrl": "",
+  "authorList": ["jbredwards"],
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}]

@@ -2,17 +2,14 @@ package git.jbredwards.friendly_chests.mod.asm.plugins.vanilla;
 
 import git.jbredwards.fluidlogged_api.api.asm.IASMPlugin;
 import git.jbredwards.friendly_chests.api.ChestType;
-import git.jbredwards.friendly_chests.api.IChestMatchable;
 import net.minecraft.block.BlockChest;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.*;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  *
@@ -24,20 +21,16 @@ public final class PluginTileEntityChest implements IASMPlugin
     @Override
     public boolean transformClass(@Nonnull ClassNode classNode, boolean obfuscated) {
         /*
-         * getAdjacentChest:
+         * checkForAdjacentChests:
          * New code:
-         * @Nullable
-         * protected TileEntityChest getAdjacentChest(EnumFacing side)
+         * //optimize this method and don't check chests every tick
+         * public void checkForAdjacentChests()
          * {
-         *     return Hooks.getAdjacentChest(this, side);
+         *     Hooks.checkForAdjacentChests(this);
          * }
          */
-        overrideMethod(classNode, method -> method.name.equals(obfuscated ? "func_174911_a" : "getAdjacentChest"),
-            "getAdjacentChest", "(Lnet/minecraft/tileentity/TileEntityChest;Lnet/minecraft/util/EnumFacing;)Lnet/minecraft/tileentity/TileEntityChest;", generator -> {
-                generator.visitVarInsn(ALOAD, 0);
-                generator.visitVarInsn(ALOAD, 1);
-            }
-        );
+        overrideMethod(classNode, method -> method.name.equals(obfuscated ? "func_145979_i" : "checkForAdjacentChests"),
+            "checkForAdjacentChests", "(Lnet/minecraft/tileentity/TileEntityChest;)V", generator -> generator.visitVarInsn(ALOAD, 0));
         /*
          * getBlockMetadata:
          * New code:
@@ -78,26 +71,47 @@ public final class PluginTileEntityChest implements IASMPlugin
     @SuppressWarnings("unused")
     public static final class Hooks
     {
-        @Nullable
-        public static TileEntityChest getAdjacentChest(@Nonnull TileEntityChest here, @Nonnull EnumFacing sideToCheck) {
-            if(here.getBlockType() instanceof BlockChest) {
-                final IBlockState state = here.getWorld().getBlockState(here.getPos());
-                if(state.getValue(ChestType.TYPE) != ChestType.SINGLE) {
-                    final EnumFacing sideConnected = ChestType.getDirectionToAttached(state);
-                    if(sideConnected == sideToCheck) {
-                        final BlockPos otherPos = here.getPos().offset(sideConnected);
-                        if(IChestMatchable.chestMatches((BlockChest)here.getBlockType(), here.getWorld(), state, here.getPos(), here.getWorld().getBlockState(otherPos), otherPos)) {
-                            final TileEntity tile = here.getWorld().getTileEntity(otherPos);
-                            if(tile instanceof TileEntityChest) {
-                                here.setNeighbor(here, sideToCheck.getOpposite());
-                                return (TileEntityChest)tile;
-                            }
+        public static void checkForAdjacentChests(@Nonnull TileEntityChest tile) {
+            if(tile.hasWorld() && tile.getWorld().isAreaLoaded(tile.getPos(), 1)) {
+                tile.getBlockMetadata(); //set internal metadata value
+
+                final ChestType type = ChestType.fromIndex(tile.blockMetadata >> 2);
+                if(type == ChestType.SINGLE) {
+                    tile.adjacentChestChecked = false;
+                    tile.adjacentChestZNeg = null;
+                    tile.adjacentChestZPos = null;
+                    tile.adjacentChestXNeg = null;
+                    tile.adjacentChestXPos = null;
+                }
+
+                //check neighboring adjacent chests
+                else if(!tile.adjacentChestChecked) {
+                    tile.adjacentChestZNeg = null;
+                    tile.adjacentChestZPos = null;
+                    tile.adjacentChestXNeg = null;
+                    tile.adjacentChestXPos = null;
+
+                    final EnumFacing connectedSide = type.rotate(EnumFacing.byHorizontalIndex(tile.blockMetadata & 3));
+                    final TileEntity neighbor = tile.getWorld().getTileEntity(tile.getPos().offset(connectedSide));
+
+                    if(neighbor instanceof TileEntityChest) {
+                        tile.adjacentChestChecked = true;
+                        switch(connectedSide) {
+                            case NORTH:
+                                tile.adjacentChestZNeg = (TileEntityChest)neighbor;
+                                break;
+                            case SOUTH:
+                                tile.adjacentChestZPos = (TileEntityChest)neighbor;
+                                break;
+                            case WEST:
+                                tile.adjacentChestXNeg = (TileEntityChest)neighbor;
+                                break;
+                            case EAST:
+                                tile.adjacentChestXPos = (TileEntityChest)neighbor;
                         }
                     }
                 }
             }
-
-            return null;
         }
 
         public static int fixMetadata(@Nonnull TileEntityChest tile, int meta) {

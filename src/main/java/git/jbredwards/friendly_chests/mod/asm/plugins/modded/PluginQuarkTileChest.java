@@ -14,9 +14,7 @@ public final class PluginQuarkTileChest implements IASMPlugin
 {
     @Override
     public boolean transformClass(@Nonnull ClassNode classNode, boolean obfuscated) {
-        classNode.methods.removeIf(method -> method.name.equals("getCapability")
-                || method.name.equals(obfuscated ? "func_174911_a" : "getAdjacentChest"));
-
+        classNode.methods.removeIf(method -> method.name.equals("getCapability"));
         return false;
     }
 }

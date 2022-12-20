@@ -11,7 +11,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven-publish'
 
-version = 'v1.0.0-mc1.12.2'
+version = 'v1.0.1-mc1.12.2'
 group = 'git.jbredwards.friendly_chests'
 archivesBaseName = 'Friendly-Chests'
 sourceCompatibility = targetCompatibility = '1.8'
@@ -24,12 +24,11 @@ minecraft {
 }
 
 dependencies {
-    //fluidlogged api
     deobfCompile "com.github.jbredwards:fluidlogged-api:${fluidlogged_api_version}"
+    deobfProvided "mezz.jei:jei_1.12.2:${jei_version}"
     //quark
     deobfProvided 'com.github.VazkiiMods:Quark:1.12-SNAPSHOT'
     deobfProvided 'com.github.VazkiiMods:AutoRegLib:1.12-SNAPSHOT'
-    deobfProvided "mezz.jei:jei_1.12.2:${jei_version}"
 }
 
 repositories {
