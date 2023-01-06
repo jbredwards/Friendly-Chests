@@ -11,7 +11,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import javax.annotation.Nonnull;
@@ -23,7 +22,6 @@ import javax.annotation.Nullable;
  * @author jbred
  *
  */
-@Mod.EventBusSubscriber(modid = "friendly_chests")
 public interface IFriendlyChestCapability
 {
     @SuppressWarnings("ConstantConditions")

@@ -3,6 +3,7 @@ package git.jbredwards.friendly_chests.mod;
 import git.jbredwards.friendly_chests.mod.common.capability.IFriendlyChestCapability;
 import git.jbredwards.friendly_chests.mod.common.datafixer.ChestCapabilityDataFixer;
 import net.minecraft.util.datafix.FixTypes;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -16,11 +17,12 @@ import javax.annotation.Nonnull;
  * @author jbred
  *
  */
-@Mod(modid = "friendly_chests", name = "Friendly Chests", version = "1.0.1")
+@Mod(modid = "friendly_chests", name = "Friendly Chests", version = "1.0.2")
 public final class FriendlyChests
 {
     @Mod.EventHandler
     static void preInit(@Nonnull FMLPreInitializationEvent event) {
+        MinecraftForge.EVENT_BUS.register(IFriendlyChestCapability.class);
         CapabilityManager.INSTANCE.register(
                 IFriendlyChestCapability.class,
                 IFriendlyChestCapability.Storage.INSTANCE,
