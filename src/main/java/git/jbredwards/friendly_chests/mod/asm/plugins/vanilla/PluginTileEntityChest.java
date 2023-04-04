@@ -74,40 +74,41 @@ public final class PluginTileEntityChest implements IASMPlugin
         public static void checkForAdjacentChests(@Nonnull TileEntityChest tile) {
             if(tile.hasWorld() && tile.getWorld().isAreaLoaded(tile.getPos(), 1)) {
                 tile.getBlockMetadata(); //set internal metadata value
+                if(tile.getBlockType() instanceof BlockChest) { //fix thaumcraft conflict
+                    final ChestType type = ChestType.fromIndex(tile.blockMetadata >> 2);
+                    if(type == ChestType.SINGLE) {
+                        tile.adjacentChestChecked = false;
+                        tile.adjacentChestZNeg = null;
+                        tile.adjacentChestZPos = null;
+                        tile.adjacentChestXNeg = null;
+                        tile.adjacentChestXPos = null;
+                    }
 
-                final ChestType type = ChestType.fromIndex(tile.blockMetadata >> 2);
-                if(type == ChestType.SINGLE) {
-                    tile.adjacentChestChecked = false;
-                    tile.adjacentChestZNeg = null;
-                    tile.adjacentChestZPos = null;
-                    tile.adjacentChestXNeg = null;
-                    tile.adjacentChestXPos = null;
-                }
+                    //check neighboring adjacent chests
+                    else if(!tile.adjacentChestChecked) {
+                        tile.adjacentChestZNeg = null;
+                        tile.adjacentChestZPos = null;
+                        tile.adjacentChestXNeg = null;
+                        tile.adjacentChestXPos = null;
 
-                //check neighboring adjacent chests
-                else if(!tile.adjacentChestChecked) {
-                    tile.adjacentChestZNeg = null;
-                    tile.adjacentChestZPos = null;
-                    tile.adjacentChestXNeg = null;
-                    tile.adjacentChestXPos = null;
+                        final EnumFacing connectedSide = type.rotate(EnumFacing.byHorizontalIndex(tile.blockMetadata & 3));
+                        final TileEntity neighbor = tile.getWorld().getTileEntity(tile.getPos().offset(connectedSide));
 
-                    final EnumFacing connectedSide = type.rotate(EnumFacing.byHorizontalIndex(tile.blockMetadata & 3));
-                    final TileEntity neighbor = tile.getWorld().getTileEntity(tile.getPos().offset(connectedSide));
-
-                    if(neighbor instanceof TileEntityChest) {
-                        tile.adjacentChestChecked = true;
-                        switch(connectedSide) {
-                            case NORTH:
-                                tile.adjacentChestZNeg = (TileEntityChest)neighbor;
-                                break;
-                            case SOUTH:
-                                tile.adjacentChestZPos = (TileEntityChest)neighbor;
-                                break;
-                            case WEST:
-                                tile.adjacentChestXNeg = (TileEntityChest)neighbor;
-                                break;
-                            case EAST:
-                                tile.adjacentChestXPos = (TileEntityChest)neighbor;
+                        if(neighbor instanceof TileEntityChest) {
+                            tile.adjacentChestChecked = true;
+                            switch(connectedSide) {
+                                case NORTH:
+                                    tile.adjacentChestZNeg = (TileEntityChest)neighbor;
+                                    break;
+                                case SOUTH:
+                                    tile.adjacentChestZPos = (TileEntityChest)neighbor;
+                                    break;
+                                case WEST:
+                                    tile.adjacentChestXNeg = (TileEntityChest)neighbor;
+                                    break;
+                                case EAST:
+                                    tile.adjacentChestXPos = (TileEntityChest)neighbor;
+                            }
                         }
                     }
                 }
