@@ -1,6 +1,6 @@
 package git.jbredwards.friendly_chests.mod.asm.plugins.modded;
 
-import git.jbredwards.friendly_chests.api.asm.IASMPlugin;
+import git.jbredwards.friendly_chests.mod.asm.IASMPlugin;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;

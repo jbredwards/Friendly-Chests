@@ -1,6 +1,5 @@
 package git.jbredwards.friendly_chests.mod.common.capability;
 
-import git.jbredwards.friendly_chests.api.capability.CapabilityProvider;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTPrimitive;
 import net.minecraft.nbt.NBTTagInt;

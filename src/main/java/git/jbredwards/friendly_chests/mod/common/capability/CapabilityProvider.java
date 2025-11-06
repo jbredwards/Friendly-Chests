@@ -1,4 +1,4 @@
-package git.jbredwards.friendly_chests.api.capability;
+package git.jbredwards.friendly_chests.mod.common.capability;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.nbt.NBTBase;

@@ -4,15 +4,15 @@ plugins {
     id 'java'
     id 'java-library'
     id 'maven-publish'
-    id 'org.jetbrains.gradle.plugin.idea-ext' version '1.1.7'
+    id 'org.jetbrains.gradle.plugin.idea-ext' version '1.1.9'
     id 'eclipse'
-    id 'com.gtnewhorizons.retrofuturagradle' version '1.3.27'
+    id 'com.gtnewhorizons.retrofuturagradle' version '1.4.1'
     id 'com.matthewprenger.cursegradle' version '1.4.0'
 }
 
-version = project.mod_version
+version = "v${project.mod_version}-mc1.12.2"
 group = project.maven_group
-archivesBaseName = project.archives_base_name
+archivesBaseName = "Friendly-Chests"
 
 // Set the toolchain version to decouple the Java we run Gradle with from the Java used to compile and run the mod
 java {
@@ -66,14 +66,15 @@ minecraft {
     // Add any properties you want to swap out for a dynamic value at build time here
     // Any properties here will be added to a class at build time, the name can be configured below
     // Example:
-    // injectedTags.put('VERSION', project.version)
-    // injectedTags.put('MOD_ID', project.archives_base_name)
+    injectedTags.put('VERSION', project.mod_version)
+    injectedTags.put('MOD_ID', project.mod_id)
+    injectedTags.put('MOD_NAME', project.mod_name)
 }
 
 // Generate a group.archives_base_name.Tags class
 tasks.injectTags.configure {
     // Change Tags class' name here:
-    outputClassName.set("${project.group}.${project.archives_base_name}.Tags")
+    outputClassName.set("${project.group}.${project.mod_id}.Tags")
 }
 
 repositories {
@@ -110,7 +111,7 @@ dependencies {
 
     if (project.use_mixins.toBoolean()) {
         // Change your mixin refmap name here:
-        String mixin = modUtils.enableMixins('org.spongepowered:mixin:0.8.3', "mixins.${project.archives_base_name}.refmap.json")
+        String mixin = modUtils.enableMixins('org.spongepowered:mixin:0.8.3', "mixins.${project.mod_id}.refmap.json")
         api (mixin) {
             transitive = false
         }
@@ -136,7 +137,7 @@ if (project.use_access_transformer.toBoolean()) {
 
 processResources {
     // This will ensure that this task is redone when the versions change
-    inputs.property 'version', project.version
+    inputs.property 'version', project.mod_version
     inputs.property 'mcversion', project.minecraft.version
     
     // Replace various properties in mcmod.info and pack.mcmeta if applicable
@@ -164,7 +165,7 @@ jar {
             }
         }
         if (project.use_access_transformer.toBoolean()) {
-            attribute_map['FMLAT'] = project.archives_base_name + '_at.cfg'
+            attribute_map['FMLAT'] = project.mod_id + '_at.cfg'
         }
         attributes(attribute_map)
     }

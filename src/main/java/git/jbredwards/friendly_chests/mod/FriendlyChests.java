@@ -1,5 +1,6 @@
 package git.jbredwards.friendly_chests.mod;
 
+import git.jbredwards.friendly_chests.Tags;
 import git.jbredwards.friendly_chests.mod.common.capability.IFriendlyChestCapability;
 import git.jbredwards.friendly_chests.mod.common.datafixer.ChestCapabilityDataFixer;
 import net.minecraft.util.datafix.FixTypes;
@@ -17,9 +18,12 @@ import javax.annotation.Nonnull;
  * @author jbred
  *
  */
-@Mod(modid = "friendly_chests", name = "Friendly Chests", version = "1.0.2")
+@Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION)
 public final class FriendlyChests
 {
+    @Nonnull
+    public static final String MOD_ID = Tags.MOD_ID;
+
     @Mod.EventHandler
     static void preInit(@Nonnull FMLPreInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(IFriendlyChestCapability.class);
@@ -32,7 +36,7 @@ public final class FriendlyChests
     @Mod.EventHandler
     static void init(@Nonnull FMLInitializationEvent event) {
         FMLCommonHandler.instance().getDataFixer()
-                .init("friendly_chests", ChestCapabilityDataFixer.INSTANCE.getFixVersion())
+                .init(MOD_ID, ChestCapabilityDataFixer.INSTANCE.getFixVersion())
                 .registerFix(FixTypes.BLOCK_ENTITY, ChestCapabilityDataFixer.INSTANCE);
     }
 }
