@@ -1,6 +1,6 @@
 package git.jbredwards.friendly_chests.mod.asm.plugins.vanilla;
 
-import git.jbredwards.fluidlogged_api.api.asm.IASMPlugin;
+import git.jbredwards.friendly_chests.api.asm.IASMPlugin;
 import git.jbredwards.friendly_chests.api.ChestType;
 import git.jbredwards.friendly_chests.api.IChestMatchable;
 import net.minecraft.block.BlockChest;

@@ -1,6 +1,6 @@
 package git.jbredwards.friendly_chests.mod.asm.plugins.modded;
 
-import git.jbredwards.fluidlogged_api.api.asm.IASMPlugin;
+import git.jbredwards.friendly_chests.api.asm.IASMPlugin;
 import git.jbredwards.friendly_chests.api.ChestType;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.block.Block;

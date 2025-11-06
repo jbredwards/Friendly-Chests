@@ -1,7 +1,7 @@
 package git.jbredwards.friendly_chests.mod.asm;
 
-import git.jbredwards.fluidlogged_api.api.asm.AbstractClassTransformer;
-import git.jbredwards.fluidlogged_api.api.asm.BasicLoadingPlugin;
+import git.jbredwards.friendly_chests.api.asm.AbstractClassTransformer;
+import git.jbredwards.friendly_chests.api.asm.BasicLoadingPlugin;
 import git.jbredwards.friendly_chests.mod.asm.plugins.forge.*;
 import git.jbredwards.friendly_chests.mod.asm.plugins.modded.*;
 import git.jbredwards.friendly_chests.mod.asm.plugins.vanilla.*;
