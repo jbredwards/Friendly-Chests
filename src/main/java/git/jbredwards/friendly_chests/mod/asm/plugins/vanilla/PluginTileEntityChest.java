@@ -1,7 +1,7 @@
 package git.jbredwards.friendly_chests.mod.asm.plugins.vanilla;
 
-import git.jbredwards.friendly_chests.mod.asm.IASMPlugin;
 import git.jbredwards.friendly_chests.api.ChestType;
+import git.jbredwards.friendly_chests.mod.asm.transformers.IASMClassTransformer;
 import net.minecraft.block.BlockChest;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
@@ -16,7 +16,7 @@ import javax.annotation.Nonnull;
  * @author jbred
  *
  */
-public final class PluginTileEntityChest implements IASMPlugin
+public final class PluginTileEntityChest implements IASMClassTransformer
 {
     @Override
     public boolean transformClass(@Nonnull ClassNode classNode, boolean obfuscated) {

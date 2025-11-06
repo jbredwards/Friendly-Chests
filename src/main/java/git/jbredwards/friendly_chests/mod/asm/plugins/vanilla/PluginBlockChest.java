@@ -1,8 +1,8 @@
 package git.jbredwards.friendly_chests.mod.asm.plugins.vanilla;
 
-import git.jbredwards.friendly_chests.mod.asm.IASMPlugin;
 import git.jbredwards.friendly_chests.api.ChestType;
 import git.jbredwards.friendly_chests.api.IChestMatchable;
+import git.jbredwards.friendly_chests.mod.asm.transformers.IASMClassTransformer;
 import net.minecraft.block.BlockChest;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
  * @author jbred
  *
  */
-public final class PluginBlockChest implements IASMPlugin
+public final class PluginBlockChest implements IASMClassTransformer
 {
     @Override
     public boolean isMethodValid(@Nonnull MethodNode method, boolean obfuscated) { return method.name.equals(obfuscated ? "func_189540_a" : "neighborChanged"); }

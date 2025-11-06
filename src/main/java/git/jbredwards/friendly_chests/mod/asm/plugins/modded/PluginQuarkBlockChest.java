@@ -1,6 +1,6 @@
 package git.jbredwards.friendly_chests.mod.asm.plugins.modded;
 
-import git.jbredwards.friendly_chests.mod.asm.IASMPlugin;
+import git.jbredwards.friendly_chests.mod.asm.transformers.IASMClassTransformer;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
@@ -15,7 +15,7 @@ import javax.annotation.Nonnull;
  * @author jbred
  *
  */
-public final class PluginQuarkBlockChest implements IASMPlugin
+public final class PluginQuarkBlockChest implements IASMClassTransformer
 {
     @Override
     public boolean transformClass(@Nonnull ClassNode classNode, boolean obfuscated) {

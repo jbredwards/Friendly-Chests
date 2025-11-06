@@ -1,5 +1,7 @@
-package git.jbredwards.friendly_chests.mod.asm;
+package git.jbredwards.friendly_chests.mod.asm.transformers;
 
+import net.minecraft.launchwrapper.IClassTransformer;
+import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -9,22 +11,27 @@ import org.objectweb.asm.tree.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.xml.ws.Holder;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
- * Allows for quick & easy asm plugins
+ * A version of IClassTransformer that has some basic utility functions.
+ * <p>This class exists so I can easily move this mod away from requiring Fluidlogged API.
  * @author jbred
  *
  */
-public interface IASMPlugin extends Opcodes
+public interface IASMClassTransformer extends IClassTransformer, Opcodes
 {
-    //set this to your mod's active transformer, this is to display the correct debug info in the console
-    @Nonnull Holder<String> ACTIVE_PLUGIN = new Holder<>("Unknown Plugin");
-    static void resetActivePlugin() { ACTIVE_PLUGIN.value = "Unknown Plugin"; }
-    static void setActivePlugin(@Nonnull String plugin) { ACTIVE_PLUGIN.value = plugin; }
+    @Nonnull
+    @Override
+    default byte[] transform(@Nonnull final String name, @Nonnull final String transformedName, @Nonnull final byte[] basicClass) {
+        return transform(basicClass, !FMLLaunchHandler.isDeobfuscatedEnvironment());
+    }
+
+    // ------------------------------
+    // TODO: rewrite stuff below this
+    // ------------------------------
 
     //exists to let other mods to more easily use this interface
     @Nonnull default String getHookClass() { return getClass().getName().replace('.', '/') + "$Hooks"; }
@@ -47,8 +54,6 @@ public interface IASMPlugin extends Opcodes
             for(MethodNode method : classNode.methods) {
                 int index = getMethodIndex(method, obfuscated);
                 if(index != 0) {
-                    //informs the console of the transformation
-                    informConsole(classNode.name, method);
                     //used to help add any new local variables
                     LabelNode start = new LabelNode();
                     LabelNode end = new LabelNode();
@@ -65,7 +70,6 @@ public interface IASMPlugin extends Opcodes
                 }
             }
         }
-        else informConsole(classNode.name, null);
         //writes the changes
         final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | (recalcFrames(obfuscated) ? ClassWriter.COMPUTE_FRAMES : 0));
         classNode.accept(writer);
@@ -73,22 +77,10 @@ public interface IASMPlugin extends Opcodes
         return writer.toByteArray();
     }
 
-    //whether the transformer should inform the console of changes, usually a config option
-    default boolean shouldInformConsole() { return false; }
-
-    //can be useful for easily troubleshooting plugins
-    default void informConsole(@Nonnull String className, @Nullable MethodNode method) {
-        if(shouldInformConsole()) {
-            if(method == null) System.out.printf("%s: transforming... %s%n", ACTIVE_PLUGIN.value, className);
-            else System.out.printf("%s: transforming... %s.%s%s%n", ACTIVE_PLUGIN.value, className, method.name, method.desc);
-        }
-    }
-
     //overrides an existing MethodNode
     default void overrideMethod(@Nonnull ClassNode classNode, @Nonnull Predicate<MethodNode> searchCondition, @Nullable String hookName, @Nullable String hookDesc, @Nonnull Consumer<GeneratorAdapter> consumer) {
         for(MethodNode method : classNode.methods) {
             if(searchCondition.test(method)) {
-                informConsole(classNode.name, method);
                 //remove existing body data
                 method.instructions.clear();
                 if(method.tryCatchBlocks != null) method.tryCatchBlocks.clear();
@@ -107,7 +99,6 @@ public interface IASMPlugin extends Opcodes
     //generates a new MethodNode
     default void addMethod(@Nonnull ClassNode classNode, @Nonnull String name, @Nonnull String desc, @Nullable String hookName, @Nullable String hookDesc, @Nonnull Consumer<GeneratorAdapter> consumer) {
         final MethodNode method = new MethodNode(ACC_PUBLIC, name, desc, null, null);
-        informConsole(classNode.name, method);
         //write new body data
         consumer.accept(new GeneratorAdapter(method, method.access, method.name, method.desc));
         if(hookName != null && hookDesc != null) //allow the hook to be skipped, in case it's easier to use the consumer
