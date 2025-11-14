@@ -23,10 +23,50 @@ import java.util.function.Supplier;
  */
 public interface IASMClassTransformer extends IClassTransformer, Opcodes
 {
+    boolean DEOBFUSCATED = FMLLaunchHandler.isDeobfuscatedEnvironment();
+
     @Nonnull
     @Override
     default byte[] transform(@Nonnull final String name, @Nonnull final String transformedName, @Nonnull final byte[] basicClass) {
-        return transform(basicClass, !FMLLaunchHandler.isDeobfuscatedEnvironment());
+        return transform(basicClass, !DEOBFUSCATED);
+    }
+
+    @Nonnull
+    default byte[] transformClassNode(@Nonnull final byte[] basicClass, @Nonnull final Consumer<ClassNode> transformer) {
+        @Nonnull final ClassNode classNode = new ClassNode();
+        new ClassReader(basicClass).accept(classNode, 0);
+        transformer.accept(classNode);
+
+        // writes the changes
+        @Nonnull final ClassWriter writer = new ClassWriter(0);
+        classNode.accept(writer);
+        return writer.toByteArray();
+    }
+
+    default void overwriteMethod(@Nonnull final ClassNode classNode, @Nonnull final MethodNode method, @Nonnull final Consumer<GeneratorAdapter> generator) {
+        for(@Nonnull final MethodNode candidate : classNode.methods) {
+            if(candidate.name.equals(method.name) && candidate.desc.equals(method.desc)) {
+                // remove existing body data
+                candidate.instructions.clear();
+                if(candidate.tryCatchBlocks != null) candidate.tryCatchBlocks.clear();
+                if(candidate.localVariables != null) candidate.localVariables.clear();
+                if(candidate.visibleLocalVariableAnnotations != null) candidate.visibleLocalVariableAnnotations.clear();
+                if(candidate.invisibleLocalVariableAnnotations != null) candidate.invisibleLocalVariableAnnotations.clear();
+
+                // write new body data
+                generator.accept(new GeneratorAdapter(candidate, candidate.access, candidate.name, candidate.desc));
+                candidate.visitInsn(Type.getReturnType(candidate.desc).getOpcode(IRETURN));
+                return;
+            }
+        }
+
+        generator.accept(new GeneratorAdapter(method, method.access, method.name, method.desc));
+        method.visitInsn(Type.getReturnType(method.desc).getOpcode(IRETURN));
+        classNode.methods.add(method);
+    }
+
+    default void overwriteMethod(@Nonnull final ClassNode classNode, @Nonnull final String name, @Nonnull final String desc, @Nonnull final Consumer<GeneratorAdapter> generator) {
+        overwriteMethod(classNode, new MethodNode(ACC_PUBLIC, name, desc, null, null), generator);
     }
 
     // ------------------------------
