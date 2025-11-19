@@ -1,16 +1,17 @@
 package git.jbredwards.friendly_chests.mod.asm.transformers;
 
+import com.google.common.collect.Lists;
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
+import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -38,35 +39,42 @@ public interface IASMClassTransformer extends IClassTransformer, Opcodes
         transformer.accept(classNode);
 
         // writes the changes
-        @Nonnull final ClassWriter writer = new ClassWriter(0);
+        @Nonnull final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         classNode.accept(writer);
         return writer.toByteArray();
     }
 
-    default void overwriteMethod(@Nonnull final ClassNode classNode, @Nonnull final MethodNode method, @Nonnull final Consumer<GeneratorAdapter> generator) {
-        for(@Nonnull final MethodNode candidate : classNode.methods) {
-            if(candidate.name.equals(method.name) && candidate.desc.equals(method.desc)) {
-                // remove existing body data
-                candidate.instructions.clear();
-                if(candidate.tryCatchBlocks != null) candidate.tryCatchBlocks.clear();
-                if(candidate.localVariables != null) candidate.localVariables.clear();
-                if(candidate.visibleLocalVariableAnnotations != null) candidate.visibleLocalVariableAnnotations.clear();
-                if(candidate.invisibleLocalVariableAnnotations != null) candidate.invisibleLocalVariableAnnotations.clear();
+    default void overwriteMethod(@Nonnull final ClassNode classNode, @Nonnull final String deobfName, @Nonnull final String obfName, @Nonnull final String desc, @Nonnull final Consumer<GeneratorAdapter> generator) {
+        @Nonnull final LinkedList<Type> generatedHookDescriptor = Lists.newLinkedList();
+        @Nonnull final ArrayList<Type> mappedArguments = Lists.newArrayList(Type.getObjectType(classNode.name));
+        for(@Nonnull final Type type : Type.getArgumentTypes(desc)) for(int i = type.getSize(); i > 0; i--) mappedArguments.add(type);
 
-                // write new body data
-                generator.accept(new GeneratorAdapter(candidate, candidate.access, candidate.name, candidate.desc));
-                candidate.visitInsn(Type.getReturnType(candidate.desc).getOpcode(IRETURN));
-                return;
+        @Nonnull final MethodNode method = new MethodNode(ACC_PUBLIC, DEOBFUSCATED ? deobfName : obfName, desc, null, null);
+        @Nonnull final GeneratorAdapter adapter = new GeneratorAdapter(new MethodVisitor(ASM5, method) {
+            @Override
+            public void visitVarInsn(final int opcode, final int var) {
+                generatedHookDescriptor.add(mappedArguments.get(var));
+                super.visitVarInsn(opcode, var);
             }
-        }
 
-        generator.accept(new GeneratorAdapter(method, method.access, method.name, method.desc));
-        method.visitInsn(Type.getReturnType(method.desc).getOpcode(IRETURN));
+            @Override
+            public void visitMethodInsn(final int opcode, @Nonnull final String owner, @Nonnull final String name, @Nonnull final String desc, final boolean itf) {
+                super.visitMethodInsn(opcode, owner, name, desc, itf);
+
+                final int size = Type.getArgumentTypes(desc).length;
+                for(int i = 0; i < size; i++) generatedHookDescriptor.removeLast();
+                if(opcode != INVOKESTATIC) generatedHookDescriptor.removeLast();
+
+                @Nonnull final Type returnType = Type.getReturnType(desc);
+                if(returnType != Type.VOID_TYPE) generatedHookDescriptor.add(returnType);
+            }
+        }, method.access, method.name, method.desc);
+
+        classNode.methods.removeIf(candidate -> candidate.name.equals(method.name) && candidate.desc.equals(method.desc));
+        generator.accept(adapter);
+        adapter.invokeStatic(Type.getObjectType(getHookClass()), new Method(deobfName, Type.getReturnType(desc), generatedHookDescriptor.toArray(new Type[0])));
+        adapter.returnValue();
         classNode.methods.add(method);
-    }
-
-    default void overwriteMethod(@Nonnull final ClassNode classNode, @Nonnull final String name, @Nonnull final String desc, @Nonnull final Consumer<GeneratorAdapter> generator) {
-        overwriteMethod(classNode, new MethodNode(ACC_PUBLIC, name, desc, null, null), generator);
     }
 
     // ------------------------------

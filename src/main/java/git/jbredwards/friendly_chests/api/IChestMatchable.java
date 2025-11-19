@@ -24,7 +24,7 @@ public interface IChestMatchable
     /**
      * Used in combination with {@link IChestMatchable#chestMatches} if this chest type is {@link ChestType#UNDEFINED}.
      * @return Whether this chest can connect to the other provided chest.
-     * @since 1.1.0
+     * @since 2.0.0
      */
     default boolean canChestConnectTo(@Nonnull final IBlockSource chest, @Nonnull final IBlockSource other) {
         return !ChestType.get(other.getBlockState()).hasOpposite();
@@ -32,7 +32,7 @@ public interface IChestMatchable
 
     /**
      * @return Whether this chest matches the other one provided.
-     * @since 1.1.0
+     * @since 2.0.0
      */
     default boolean chestMatches(@Nonnull final IBlockSource chest, @Nonnull final IBlockSource other) {
         return chestMatches(chest.getWorld(), chest.getBlockState(), chest.getBlockPos(), other.getBlockState(), other.getBlockPos());

@@ -1,5 +1,6 @@
 package git.jbredwards.friendly_chests.api;
 
+import com.google.common.collect.ImmutableList;
 import net.minecraft.block.BlockChest;
 import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.IBlockState;
@@ -16,9 +17,9 @@ import javax.annotation.Nonnull;
  */
 public enum ChestType implements IStringSerializable
 {
-    SINGLE("single", -1),
-    LEFT("left", 2),
-    RIGHT("right", 1),
+    SINGLE,
+    LEFT,
+    RIGHT,
     /**
      * The default ChestType for Vanilla 1.12.2. If a chest is set in the world with this value, it subsequently runs
      * {@link BlockChest#checkForSurroundingChests checkForSurroundingChests} to get its ChestType. An example of chests
@@ -28,34 +29,38 @@ public enum ChestType implements IStringSerializable
      * over its ChestType, without using {@link ChestType#UNDEFINED}.
      * </p>
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
-    UNDEFINED("undefined", -1);
+    UNDEFINED;
 
     /**
      * Friendly Chests uses ASM to apply this to {@link BlockChest} at runtime.
      * @since 1.0.0
      */
     @Nonnull
-    public static final PropertyEnum<ChestType> TYPE = PropertyEnum.create("type", ChestType.class);
+    public static final PropertyEnum<ChestType> TYPE = PropertyEnum.create("type",
+            ChestType.class, ImmutableList.of(UNDEFINED, SINGLE, LEFT, RIGHT));
 
-    @Nonnull
-    private final String name;
-    private final int opposite;
-
-    ChestType(@Nonnull String nameIn, int oppositeIn) {
-        name = nameIn;
-        opposite = oppositeIn;
-    }
-
+    /**
+     * Inherited from {@link IStringSerializable}, unused by Friendly Chests.
+     * @since 1.0.0
+     */
     @Nonnull
     @Override
     public String getName() {
-        return name;
+        return name().toLowerCase();
     }
 
     /**
-     * @return A ChestType by its ordinal value.
+     * @return This ChestType's index value.
+     * @since 2.0.0
+     */
+    public int index() {
+        return ordinal();
+    }
+
+    /**
+     * @return A ChestType by its index value.
      * @since 1.0.1
      */
     @Nonnull
@@ -74,7 +79,7 @@ public enum ChestType implements IStringSerializable
 
     /**
      * @return The provided chest's ChestType.
-     * @since 1.1.0
+     * @since 2.0.0
      */
     @Nonnull
     public static ChestType get(@Nonnull final IBlockState state) {
@@ -83,10 +88,10 @@ public enum ChestType implements IStringSerializable
 
     /**
      * @return Whether this ChestType has an opposite value.
-     * @since 1.1.0
+     * @since 2.0.0
      */
     public boolean hasOpposite() {
-        return opposite != -1;
+        return this == LEFT || this == RIGHT;
     }
 
     /**
@@ -96,22 +101,26 @@ public enum ChestType implements IStringSerializable
      */
     @Nonnull
     public ChestType getOpposite() {
-        if(hasOpposite()) return ChestType.values()[opposite];
+        switch(this) {
+            case LEFT: return RIGHT;
+            case RIGHT: return LEFT;
+        }
+
         throw new UnsupportedOperationException("Chest type does not have an \"opposite\" component: " + getName());
     }
 
     /**
      * @return Whether this ChestType is connected to another chest.
-     * @since 1.1.0
+     * @since 2.0.0
      */
     public boolean hasSideAttached() {
-        return hasOpposite();
+        return this == LEFT || this == RIGHT;
     }
 
     /**
      * @return The side of this block that's connected to a neighboring chest.
      * @throws UnsupportedOperationException If the chest type is single or undefined.
-     * @since 1.1.0
+     * @since 2.0.0
      */
     @Nonnull
     public EnumFacing getSideAttached(@Nonnull final EnumFacing chestFacing) {
@@ -125,12 +134,22 @@ public enum ChestType implements IStringSerializable
 
     /**
      * @return The side of this block that's connected to a neighboring chest.
-     * @throws UnsupportedOperationException If the chest type is single.
+     * @throws UnsupportedOperationException If the chest type is single or undefined.
+     * @since 2.0.0
+     */
+    @Nonnull
+    public EnumFacing getSideAttached(@Nonnull final IBlockState state) {
+        return getSideAttached(state.getValue(BlockChest.FACING));
+    }
+
+    /**
+     * @return The side of this block that's connected to a neighboring chest.
+     * @throws UnsupportedOperationException If the chest type is single or undefined.
      * @since 1.0.0
      */
     @Nonnull
     public static EnumFacing getDirectionToAttached(@Nonnull final IBlockState state) {
-        return get(state).getSideAttached(state.getValue(BlockChest.FACING));
+        return get(state).getSideAttached(state);
     }
 
     /**

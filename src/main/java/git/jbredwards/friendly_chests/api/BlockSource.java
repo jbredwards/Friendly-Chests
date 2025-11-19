@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 /**
  * An implementation of {@link BlockSourceImpl} that caches the state and tile entity at its position.
  *
- * @since 1.1.0
+ * @since 2.0.0
  * @author jbred
  *
  */

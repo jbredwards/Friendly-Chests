@@ -2,9 +2,8 @@ package git.jbredwards.friendly_chests.mod.asm;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
-import git.jbredwards.friendly_chests.mod.asm.plugins.forge.*;
 import git.jbredwards.friendly_chests.mod.asm.plugins.modded.*;
-import git.jbredwards.friendly_chests.mod.asm.plugins.vanilla.*;
+import git.jbredwards.friendly_chests.mod.asm.transformers.vanilla.*;
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
@@ -22,6 +21,11 @@ import java.util.Map;
 @IFMLLoadingPlugin.SortingIndex(1001)
 public final class ASMHandler implements IFMLLoadingPlugin
 {
+    public ASMHandler() throws ClassNotFoundException {
+        // Preload nested MethodVisitor class, to prevent a certain possible JVM crash.
+        Class.forName("git.jbredwards.friendly_chests.mod.asm.transformers.IASMClassTransformer$1");
+    }
+
     @Nonnull
     @Override
     public String[] getASMTransformerClass() { return new String[] {"git.jbredwards.friendly_chests.mod.asm.ASMHandler$Transformer"}; }
@@ -36,10 +40,9 @@ public final class ASMHandler implements IFMLLoadingPlugin
             plugins.put("vazkii.quark.decoration.item.ItemChestBlock", new PluginQuarkItemChest());
             plugins.put("vazkii.quark.decoration.tile.TileCustomChest", new PluginQuarkTileChest());
             //vanilla
-            plugins.put("net.minecraft.block.BlockChest", new PluginBlockChest());
-            plugins.put("net.minecraft.tileentity.TileEntityChest", new PluginTileEntityChest());
-            //forge
-            plugins.put("net.minecraftforge.items.VanillaDoubleChestItemHandler", new PluginVanillaDoubleChestItemHandler());
+            plugins.put("net.minecraft.block.BlockChest", new TransformerBlockChest());
+            plugins.put("net.minecraft.tileentity.TileEntityChest", new TransformerTileEntityChest());
+            plugins.put("net.minecraftforge.items.VanillaDoubleChestItemHandler", new TransformerVanillaDoubleChestItemHandler());
         }
 
         @Nullable
