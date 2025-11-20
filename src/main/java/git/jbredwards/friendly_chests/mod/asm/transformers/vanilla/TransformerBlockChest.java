@@ -53,7 +53,7 @@ public final class TransformerBlockChest implements IASMClassTransformer
              * New code:
              * // Add ChestType state property.
              * @ASMOverwrite
-             * public BlockStateContainer createBlockState()
+             * protected BlockStateContainer createBlockState()
              * {
              *     return Hooks.createBlockState(this);
              * }
@@ -133,7 +133,7 @@ public final class TransformerBlockChest implements IASMClassTransformer
              * New code:
              * // Check state instead of all neighbors.
              * @ASMOverwrite
-             * public boolean isDoubleChest(World worldIn, BlockPos pos)
+             * private boolean isDoubleChest(World worldIn, BlockPos pos)
              * {
              *     return Hooks.isDoubleChest(this, worldIn, pos);
              * }

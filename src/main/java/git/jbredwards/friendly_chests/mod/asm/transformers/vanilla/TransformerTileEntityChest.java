@@ -28,7 +28,7 @@ public final class TransformerTileEntityChest implements IASMClassTransformer
              * New code:
              * // Update neighboring chests if they're no longer connected.
              * @ASMOverwrite
-             * public TileEntityChest getAdjacentChest(EnumFacing side)
+             * protected TileEntityChest getAdjacentChest(EnumFacing side)
              * {
              *     return Hooks.getAdjacentChest(this, side);
              * }
@@ -55,7 +55,7 @@ public final class TransformerTileEntityChest implements IASMClassTransformer
              * New code:
              * // Only match chests that are connected to this one.
              * @ASMOverwrite
-             * public boolean isChestAt(BlockPos posIn)
+             * private boolean isChestAt(BlockPos posIn)
              * {
              *     return Hooks.isChestAt(this, newState);
              * }

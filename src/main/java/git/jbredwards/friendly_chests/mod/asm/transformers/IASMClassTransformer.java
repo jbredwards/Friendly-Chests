@@ -45,11 +45,19 @@ public interface IASMClassTransformer extends IClassTransformer, Opcodes
     }
 
     default void overwriteMethod(@Nonnull final ClassNode classNode, @Nonnull final String deobfName, @Nonnull final String obfName, @Nonnull final String desc, @Nonnull final Consumer<GeneratorAdapter> generator) {
-        @Nonnull final LinkedList<Type> generatedHookDescriptor = Lists.newLinkedList();
-        @Nonnull final ArrayList<Type> mappedArguments = Lists.newArrayList(Type.getObjectType(classNode.name));
-        for(@Nonnull final Type type : Type.getArgumentTypes(desc)) for(int i = type.getSize(); i > 0; i--) mappedArguments.add(type);
-
         @Nonnull final MethodNode method = new MethodNode(ACC_PUBLIC, DEOBFUSCATED ? deobfName : obfName, desc, null, null);
+        classNode.methods.removeIf(candidate -> {
+            if(candidate.name.equals(method.name) && candidate.desc.equals(method.desc)) {
+                method.access = candidate.access;
+                return true;
+            }
+
+            return false;
+        });
+
+        @Nonnull final LinkedList<Type> generatedHookDescriptor = Lists.newLinkedList();
+        @Nonnull final ArrayList<Type> mappedArguments = (method.access & ACC_STATIC) != 0 ? Lists.newArrayList() : Lists.newArrayList(Type.getObjectType(classNode.name));
+        for(@Nonnull final Type type : Type.getArgumentTypes(desc)) for(int i = type.getSize(); i > 0; i--) mappedArguments.add(type);
         @Nonnull final GeneratorAdapter adapter = new GeneratorAdapter(new MethodVisitor(ASM5, method) {
             @Override
             public void visitVarInsn(final int opcode, final int var) {
@@ -70,7 +78,6 @@ public interface IASMClassTransformer extends IClassTransformer, Opcodes
             }
         }, method.access, method.name, method.desc);
 
-        classNode.methods.removeIf(candidate -> candidate.name.equals(method.name) && candidate.desc.equals(method.desc));
         generator.accept(adapter);
         adapter.invokeStatic(Type.getObjectType(getHookClass()), new Method(deobfName, Type.getReturnType(desc), generatedHookDescriptor.toArray(new Type[0])));
         adapter.returnValue();

@@ -31,7 +31,7 @@ public final class TransformerVanillaDoubleChestItemHandler implements IASMClass
          *     return Hooks.get(chest);
          * }
          */
-        return transformClassNode(basicClass, classNode -> overwriteMethod(classNode, "get", "get", "()Lnet/minecraftforge/items/VanillaDoubleChestItemHandler;", adapter -> adapter.loadArg(0)));
+        return transformClassNode(basicClass, classNode -> overwriteMethod(classNode, "get", "get", "(Lnet/minecraft/tileentity/TileEntityChest;)Lnet/minecraftforge/items/VanillaDoubleChestItemHandler;", adapter -> adapter.loadArg(0)));
     }
 
     @SuppressWarnings("unused")
