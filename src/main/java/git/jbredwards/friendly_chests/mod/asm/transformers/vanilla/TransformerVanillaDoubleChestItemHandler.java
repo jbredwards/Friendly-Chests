@@ -8,6 +8,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.items.VanillaDoubleChestItemHandler;
+import org.objectweb.asm.tree.ClassNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,9 +20,8 @@ import javax.annotation.Nullable;
  */
 public final class TransformerVanillaDoubleChestItemHandler implements IASMClassTransformer
 {
-    @Nonnull
     @Override
-    public byte[] transform(@Nonnull final String name, @Nonnull final String transformedName, @Nonnull final byte[] basicClass) {
+    public void transform(@Nonnull final ClassNode classNode) {
         /*
          * New code:
          * // Get inventory from state instead of all neighbors.
@@ -31,7 +31,7 @@ public final class TransformerVanillaDoubleChestItemHandler implements IASMClass
          *     return Hooks.get(chest);
          * }
          */
-        return transformClassNode(basicClass, classNode -> overwriteMethod(classNode, "get", "get", "(Lnet/minecraft/tileentity/TileEntityChest;)Lnet/minecraftforge/items/VanillaDoubleChestItemHandler;", adapter -> adapter.loadArg(0)));
+        overwriteMethod(classNode, "get", "get", "(Lnet/minecraft/tileentity/TileEntityChest;)Lnet/minecraftforge/items/VanillaDoubleChestItemHandler;", adapter -> adapter.loadArg(0));
     }
 
     @SuppressWarnings("unused")

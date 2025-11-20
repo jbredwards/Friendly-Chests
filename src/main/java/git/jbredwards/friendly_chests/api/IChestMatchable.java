@@ -22,15 +22,6 @@ import javax.annotation.Nonnull;
 public interface IChestMatchable
 {
     /**
-     * Used in combination with {@link IChestMatchable#chestMatches} if this chest type is {@link ChestType#UNDEFINED}.
-     * @return Whether this chest can connect to the other provided chest.
-     * @since 2.0.0
-     */
-    default boolean canChestConnectTo(@Nonnull final IBlockSource chest, @Nonnull final IBlockSource other) {
-        return !ChestType.get(other.getBlockState()).hasOpposite();
-    }
-
-    /**
      * @return Whether this chest matches the other one provided.
      * @since 2.0.0
      */

@@ -9,6 +9,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import org.objectweb.asm.tree.ClassNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,63 +21,60 @@ import javax.annotation.Nullable;
  */
 public final class TransformerTileEntityChest implements IASMClassTransformer
 {
-    @Nonnull
     @Override
-    public byte[] transform(@Nonnull final String name, @Nonnull final String transformedName, @Nonnull final byte[] basicClass) {
-        return transformClassNode(basicClass, classNode -> {
-            /*
-             * New code:
-             * // Update neighboring chests if they're no longer connected.
-             * @ASMOverwrite
-             * protected TileEntityChest getAdjacentChest(EnumFacing side)
-             * {
-             *     return Hooks.getAdjacentChest(this, side);
-             * }
-             */
-            overwriteMethod(classNode, "getAdjacentChest", "func_174911_a", "(Lnet/minecraft/util/EnumFacing;)Lnet/minecraft/tileentity/TileEntityChest;", adapter -> {
-                adapter.loadThis();
-                adapter.loadArg(0);
-            });
-            /*
-             * New code:
-             * // Return old metadata values for rendering.
-             * @ASMOverwrite
-             * public int getBlockMetadata()
-             * {
-             *     return Hooks.getBlockMetadata(this, super.getBlockMetadata());
-             * }
-             */
-            overwriteMethod(classNode, "getBlockMetadata", "func_145832_p", "()I", adapter -> {
-                adapter.loadThis();
-                adapter.loadThis();
-                adapter.visitMethodInsn(INVOKESPECIAL, classNode.superName, DEOBFUSCATED ? "getBlockMetadata" : "func_145832_p", "()I", false);
-            });
-            /*
-             * New code:
-             * // Only match chests that are connected to this one.
-             * @ASMOverwrite
-             * private boolean isChestAt(BlockPos posIn)
-             * {
-             *     return Hooks.isChestAt(this, newState);
-             * }
-             */
-            overwriteMethod(classNode, "isChestAt", "func_174912_b", "(Lnet/minecraft/util/math/BlockPos;)Z", adapter -> {
-                adapter.loadThis();
-                adapter.loadArg(0);
-            });
-            /*
-             * New code:
-             * // Ensure that modded chest tile entities don't refresh when their state changes.
-             * @ASMOverwrite
-             * public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState)
-             * {
-             *     return Hooks.shouldRefresh(oldState, newState);
-             * }
-             */
-            overwriteMethod(classNode, "shouldRefresh", "shouldRefresh", "(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/block/state/IBlockState;)Z", adapter -> {
-                adapter.loadArg(2);
-                adapter.loadArg(3);
-            });
+    public void transform(@Nonnull final ClassNode classNode) {
+        /*
+         * New code:
+         * // Update neighboring chests if they're no longer connected.
+         * @ASMOverwrite
+         * protected TileEntityChest getAdjacentChest(EnumFacing side)
+         * {
+         *     return Hooks.getAdjacentChest(this, side);
+         * }
+         */
+        overwriteMethod(classNode, "getAdjacentChest", "func_174911_a", "(Lnet/minecraft/util/EnumFacing;)Lnet/minecraft/tileentity/TileEntityChest;", adapter -> {
+            adapter.loadThis();
+            adapter.loadArg(0);
+        });
+        /*
+         * New code:
+         * // Return old metadata values for rendering.
+         * @ASMOverwrite
+         * public int getBlockMetadata()
+         * {
+         *     return Hooks.getBlockMetadata(this, super.getBlockMetadata());
+         * }
+         */
+        overwriteMethod(classNode, "getBlockMetadata", "func_145832_p", "()I", adapter -> {
+            adapter.loadThis();
+            adapter.loadThis();
+            adapter.visitMethodInsn(INVOKESPECIAL, classNode.superName, DEOBFUSCATED ? "getBlockMetadata" : "func_145832_p", "()I", false);
+        });
+        /*
+         * New code:
+         * // Only match chests that are connected to this one.
+         * @ASMOverwrite
+         * private boolean isChestAt(BlockPos posIn)
+         * {
+         *     return Hooks.isChestAt(this, newState);
+         * }
+         */
+        overwriteMethod(classNode, "isChestAt", "func_174912_b", "(Lnet/minecraft/util/math/BlockPos;)Z", adapter -> {
+            adapter.loadThis();
+            adapter.loadArg(0);
+        });
+        /*
+         * New code:
+         * // Ensure that modded chest tile entities don't refresh when their state changes.
+         * @ASMOverwrite
+         * public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState)
+         * {
+         *     return Hooks.shouldRefresh(oldState, newState);
+         * }
+         */
+        overwriteMethod(classNode, "shouldRefresh", "shouldRefresh", "(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/block/state/IBlockState;)Z", adapter -> {
+            adapter.loadArg(2);
+            adapter.loadArg(3);
         });
     }
 
@@ -126,7 +124,7 @@ public final class TransformerTileEntityChest implements IASMClassTransformer
         }
 
         public static boolean shouldRefresh(@Nonnull final IBlockState oldState, @Nonnull final IBlockState newState) {
-            return oldState.getBlock() != newState.getBlock() && oldState.getBlock() instanceof BlockChest || oldState != newState;
+            return oldState.getBlock() instanceof BlockChest ? oldState.getBlock() != newState.getBlock() : oldState != newState;
         }
     }
 }

@@ -2,7 +2,7 @@ package git.jbredwards.friendly_chests.mod.asm;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
-import git.jbredwards.friendly_chests.mod.asm.plugins.modded.*;
+import git.jbredwards.friendly_chests.mod.asm.transformers.modded.*;
 import git.jbredwards.friendly_chests.mod.asm.transformers.vanilla.*;
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
@@ -35,10 +35,10 @@ public final class ASMHandler implements IFMLLoadingPlugin
         public final Multimap<String, IClassTransformer> plugins = MultimapBuilder.hashKeys().arrayListValues().build();
         public Transformer() {
             //modded
-            plugins.put("noobanidus.mods.lootr.block.LootrChestBlock", new PluginLootr());
-            plugins.put("vazkii.quark.decoration.block.BlockCustomChest", new PluginQuarkBlockChest());
-            plugins.put("vazkii.quark.decoration.item.ItemChestBlock", new PluginQuarkItemChest());
-            plugins.put("vazkii.quark.decoration.tile.TileCustomChest", new PluginQuarkTileChest());
+            plugins.put("noobanidus.mods.lootr.block.LootrChestBlock", new TransformerLootrBlock());
+            plugins.put("vazkii.quark.decoration.block.BlockCustomChest", new TransformerQuarkBlock());
+            plugins.put("vazkii.quark.decoration.item.ItemChestBlock", new TransformerQuarkItem());
+            plugins.put("vazkii.quark.decoration.tile.TileCustomChest", new TransformerQuarkTile());
             //vanilla
             plugins.put("net.minecraft.block.BlockChest", new TransformerBlockChest());
             plugins.put("net.minecraft.tileentity.TileEntityChest", new TransformerTileEntityChest());
