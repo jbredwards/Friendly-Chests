@@ -7,6 +7,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -36,9 +37,9 @@ public interface IFriendlyChestCapability
         return tile != null && tile.hasCapability(CAPABILITY, null) ? tile.getCapability(CAPABILITY, null) : null;
     }
 
-    @SubscribeEvent
-    static void attachCapability(@Nonnull AttachCapabilitiesEvent<TileEntity> event) {
-        if(event.getObject() instanceof TileEntityChest) event.addCapability(CAPABILITY_ID, new CapabilityProvider<>(CAPABILITY));
+    @Nullable
+    static IFriendlyChestCapability get(@Nullable Chunk chunk) {
+        return chunk != null && chunk.hasCapability(CAPABILITY, null) ? chunk.getCapability(CAPABILITY, null) : null;
     }
 
     class Impl implements IFriendlyChestCapability
@@ -66,5 +67,15 @@ public interface IFriendlyChestCapability
         public void readNBT(@Nonnull Capability<IFriendlyChestCapability> capability, @Nonnull IFriendlyChestCapability instance, @Nullable EnumFacing side, @Nullable NBTBase nbt) {
             instance.setFixed(nbt instanceof NBTPrimitive && ((NBTPrimitive)nbt).getInt() != 0);
         }
+    }
+
+    @SubscribeEvent
+    static void attachChunk(@Nonnull AttachCapabilitiesEvent<Chunk> event) {
+        event.addCapability(CAPABILITY_ID, new CapabilityProvider<>(CAPABILITY));
+    }
+
+    @SubscribeEvent
+    static void attachTile(@Nonnull AttachCapabilitiesEvent<TileEntity> event) {
+        if(event.getObject() instanceof TileEntityChest) event.addCapability(CAPABILITY_ID, new CapabilityProvider<>(CAPABILITY));
     }
 }

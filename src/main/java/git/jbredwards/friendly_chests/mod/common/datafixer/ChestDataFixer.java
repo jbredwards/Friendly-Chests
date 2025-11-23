@@ -30,6 +30,9 @@ public final class ChestDataFixer
     @SubscribeEvent(priority = EventPriority.HIGH)
     static void applyFix(@Nonnull final ChunkEvent.Load event) {
         @Nonnull final Chunk chunk = event.getChunk();
+        @Nullable final IFriendlyChestCapability chunkCap = IFriendlyChestCapability.get(chunk);
+
+        if(chunkCap == null || chunkCap.isFixed()) return;
         @Nonnull final World world = event.getWorld();
 
         //noinspection unchecked
@@ -57,6 +60,8 @@ public final class ChestDataFixer
                 cap.setFixed(true);
             }
         }
+
+        chunkCap.setFixed(true);
     }
 
     static boolean fixSide(@Nonnull IBlockState state, @Nonnull World world, @Nonnull Chunk chunk, @Nonnull BlockPos pos, @Nonnull EnumFacing facing, @Nonnull ChestType type) {
