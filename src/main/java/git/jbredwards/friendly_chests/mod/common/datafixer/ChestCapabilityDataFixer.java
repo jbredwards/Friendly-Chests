@@ -8,6 +8,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.datafix.IFixableData;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * ensure each previously saved tile entity starts with this set to false
@@ -16,22 +17,36 @@ import javax.annotation.Nonnull;
  */
 public enum ChestCapabilityDataFixer implements IFixableData
 {
-    INSTANCE;
+    CHUNK_INSTANCE {
+        @Nonnull
+        @Override
+        public NBTTagCompound fixTagCompound(@Nonnull final NBTTagCompound compound) {
+            @Nonnull final NBTTagCompound nbt = compound.getCompoundTag("Level");
+            @Nonnull final NBTTagCompound capabilities = nbt.getCompoundTag("ForgeCaps");
+
+            if(!nbt.hasKey("ForgeCaps")) nbt.setTag("ForgeCaps", capabilities);
+            if(!capabilities.hasKey(IFriendlyChestCapability.CAPABILITY_ID.toString()))
+                capabilities.setInteger(IFriendlyChestCapability.CAPABILITY_ID.toString(), 0);
+
+            return compound;
+        }
+    },
+    TILE_INSTANCE {
+        @Nonnull
+        @Override
+        public NBTTagCompound fixTagCompound(@Nonnull final NBTTagCompound compound) {
+            @Nullable final Class<?> clazz = TileEntity.REGISTRY.getObject(new ResourceLocation(compound.getString("id")));
+            if(clazz != null && TileEntityChest.class.isAssignableFrom(clazz)) {
+                @Nonnull final NBTTagCompound capabilities = compound.getCompoundTag("ForgeCaps");
+                if(!compound.hasKey("ForgeCaps")) compound.setTag("ForgeCaps", capabilities);
+                if(!capabilities.hasKey(IFriendlyChestCapability.CAPABILITY_ID.toString()))
+                    capabilities.setInteger(IFriendlyChestCapability.CAPABILITY_ID.toString(), 0);
+            }
+
+            return compound;
+        }
+    };
 
     @Override
     public int getFixVersion() { return 101; }
-
-    @Nonnull
-    @Override
-    public NBTTagCompound fixTagCompound(@Nonnull NBTTagCompound compound) {
-        final Class<?> clazz = TileEntity.REGISTRY.getObject(new ResourceLocation(compound.getString("id")));
-        if(clazz != null && TileEntityChest.class.isAssignableFrom(clazz)) {
-            final NBTTagCompound capabilities = compound.getCompoundTag("ForgeCaps");
-            if(!compound.hasKey("ForgeCaps")) compound.setTag("ForgeCaps", capabilities);
-            if(!capabilities.hasKey(IFriendlyChestCapability.CAPABILITY_ID.toString()))
-                capabilities.setInteger(IFriendlyChestCapability.CAPABILITY_ID.toString(), 0);
-        }
-
-        return compound;
-    }
 }

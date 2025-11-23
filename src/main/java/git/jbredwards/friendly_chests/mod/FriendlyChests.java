@@ -7,6 +7,7 @@ import git.jbredwards.friendly_chests.mod.common.datafixer.ChestCapabilityDataFi
 import net.minecraft.util.datafix.FixTypes;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.util.ModFixs;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
@@ -29,7 +30,7 @@ public final class FriendlyChests
     public static final String MOD_ID = Tags.MOD_ID;
 
     @Mod.EventHandler
-    static void preInit(@Nonnull FMLPreInitializationEvent event) {
+    static void preInit(@Nonnull final FMLPreInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(IFriendlyChestCapability.class);
         CapabilityManager.INSTANCE.register(IFriendlyChestCapability.class, IFriendlyChestCapability.Storage.INSTANCE, IFriendlyChestCapability.Impl::new);
         // Remove now unneeded logic for Atum's double chest placement.
@@ -37,7 +38,9 @@ public final class FriendlyChests
     }
 
     @Mod.EventHandler
-    static void init(@Nonnull FMLInitializationEvent event) {
-        FMLCommonHandler.instance().getDataFixer().init(MOD_ID, ChestCapabilityDataFixer.INSTANCE.getFixVersion()).registerFix(FixTypes.BLOCK_ENTITY, ChestCapabilityDataFixer.INSTANCE);
+    static void init(@Nonnull final FMLInitializationEvent event) {
+        @Nonnull final ModFixs fixes = FMLCommonHandler.instance().getDataFixer().init(MOD_ID, ChestCapabilityDataFixer.TILE_INSTANCE.getFixVersion());
+        fixes.registerFix(FixTypes.BLOCK_ENTITY, ChestCapabilityDataFixer.TILE_INSTANCE);
+        fixes.registerFix(FixTypes.CHUNK, ChestCapabilityDataFixer.CHUNK_INSTANCE);
     }
 }
