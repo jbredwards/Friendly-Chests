@@ -279,6 +279,12 @@ public final class TransformerBlockChest implements IASMClassTransformer
 
         @Nullable
         public static ILockableContainer getContainer(@Nonnull final BlockChest block, @Nonnull final World world, @Nonnull final BlockPos pos, final boolean allowBlocking) {
+            return getContainer(block, world, pos, allowBlocking, "container.chestDouble");
+        }
+
+        // helper
+        @Nullable
+        public static ILockableContainer getContainer(@Nonnull final BlockChest block, @Nonnull final World world, @Nonnull final BlockPos pos, final boolean allowBlocking, @Nonnull final String nameKey) {
             @Nullable final TileEntity tile = world.getTileEntity(pos);
             if(!(tile instanceof TileEntityChest) || !allowBlocking && block.isBlocked(world, pos)) return null;
 
@@ -292,10 +298,10 @@ public final class TransformerBlockChest implements IASMClassTransformer
             if(!allowBlocking && block.isBlocked(world, attached)) return null;
             @Nullable final TileEntity neighbor = world.getTileEntity(attached);
 
-            if(!(neighbor instanceof TileEntityChest)) return null;
+            if(!(neighbor instanceof TileEntityChest)) return (ILockableContainer)tile;
             return sideAttached.getAxisDirection() == EnumFacing.AxisDirection.POSITIVE
-                    ? new InventoryLargeChest("container.chestDouble", (ILockableContainer)tile, (ILockableContainer)neighbor)
-                    : new InventoryLargeChest("container.chestDouble", (ILockableContainer)neighbor, (ILockableContainer)tile);
+                    ? new InventoryLargeChest(nameKey, (ILockableContainer)tile, (ILockableContainer)neighbor)
+                    : new InventoryLargeChest(nameKey, (ILockableContainer)neighbor, (ILockableContainer)tile);
         }
 
         public static boolean isDoubleChest(@Nonnull final BlockChest block, @Nonnull final World world, @Nonnull final BlockPos pos) {

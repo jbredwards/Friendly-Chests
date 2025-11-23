@@ -35,6 +35,11 @@ public final class ASMHandler implements IFMLLoadingPlugin
         public final Multimap<String, IClassTransformer> plugins = MultimapBuilder.hashKeys().arrayListValues().build();
         public Transformer() {
             //modded
+            plugins.put("com.teammetallurgy.atum.blocks.base.BlockChestBase", new TransformerAtumBlockBase());
+            plugins.put("com.teammetallurgy.atum.blocks.base.tileentity.TileEntityChestBase", new TransformerQuarkTile());
+            plugins.put("com.teammetallurgy.atum.blocks.stone.limestone.chest.BlockSarcophagus", new TransformerAtumBlockSarcophagus());
+            plugins.put("com.teammetallurgy.atum.entity.undead.EntityPharaoh", new TransformerAtumEntity());
+            plugins.put("com.teammetallurgy.atum.blocks.base.ItemDoubleChest", new TransformerAtumItem());
             plugins.put("noobanidus.mods.lootr.block.LootrChestBlock", new TransformerLootrBlock());
             plugins.put("vazkii.quark.decoration.block.BlockCustomChest", new TransformerQuarkBlock());
             plugins.put("vazkii.quark.decoration.item.ItemChestBlock", new TransformerQuarkItem());

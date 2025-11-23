@@ -153,6 +153,16 @@ public enum ChestType implements IStringSerializable
     }
 
     /**
+     * @return The side of this block that's connected to a neighboring chest, as an array.
+     * @since 2.0.0
+     */
+    @Nonnull
+    public static EnumFacing[] getDirectionsToAttached(@Nonnull final IBlockState state) {
+        @Nonnull final ChestType type = get(state);
+        return type.hasSideAttached() ? new EnumFacing[] {type.getSideAttached(state)} : new EnumFacing[0];
+    }
+
+    /**
      * Use {@link ChestType#getSideAttached} instead.
      * @return The side of this block that's connected to a neighboring chest.
      * @throws UnsupportedOperationException If the chest type is single or undefined.

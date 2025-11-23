@@ -6,8 +6,7 @@ import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.*;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -30,13 +29,31 @@ public interface IASMClassTransformer extends IClassTransformer, Opcodes
     @Override
     default byte[] transform(@Nonnull final String name, @Nonnull final String transformedName, @Nonnull final byte[] basicClass) {
         @Nonnull final ClassNode classNode = new ClassNode();
-        new ClassReader(basicClass).accept(classNode, 0);
+        new ClassReader(basicClass).accept(classNode, ClassReader.SKIP_FRAMES);
         transform(classNode);
 
         // writes the changes
-        @Nonnull final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        @Nonnull final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
         classNode.accept(writer);
         return writer.toByteArray();
+    }
+
+    default void lockHorizontals(@Nonnull final ClassNode classNode, @Nonnull final String deobfName, @Nonnull final String obfName, @Nonnull final Consumer<InsnList> inject) {
+        for(@Nonnull final MethodNode method : classNode.methods) {
+            if(method.name.equals(DEOBFUSCATED ? deobfName : obfName)) {
+                for(@Nonnull final AbstractInsnNode insn : method.instructions.toArray()) {
+                    if(insn.getOpcode() == GETSTATIC && ((FieldInsnNode)insn).name.equals(DEOBFUSCATED ? "HORIZONTALS" : "field_176754_o")) {
+                        @Nonnull final InsnList list = new InsnList();
+                        inject.accept(list);
+
+                        method.instructions.insertBefore(insn, list);
+                        method.instructions.insertBefore(insn, new MethodInsnNode(INVOKESTATIC, "git/jbredwards/friendly_chests/api/ChestType", "getDirectionsToAttached", "(Lnet/minecraft/block/state/IBlockState;)[Lnet/minecraft/util/EnumFacing;", false));
+                        method.instructions.remove(insn);
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     default void overwriteMethod(@Nonnull final ClassNode classNode, @Nonnull final String deobfName, @Nonnull final String obfName, @Nonnull final String desc, @Nonnull final Consumer<GeneratorAdapter> generator) {
