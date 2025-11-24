@@ -41,6 +41,7 @@ public final class ASMHandler implements IFMLLoadingPlugin
             plugins.put("com.teammetallurgy.atum.entity.undead.EntityPharaoh", new TransformerAtumEntity());
             plugins.put("com.teammetallurgy.atum.blocks.base.ItemDoubleChest", new TransformerAtumItem());
             plugins.put("noobanidus.mods.lootr.block.LootrChestBlock", new TransformerLootrBlock());
+            plugins.put("tschipp.carryon.common.item.ItemTile", new TransformerCarryOnItem());
             plugins.put("vazkii.quark.decoration.block.BlockCustomChest", new TransformerQuarkBlock());
             plugins.put("vazkii.quark.decoration.item.ItemChestBlock", new TransformerQuarkItem());
             plugins.put("vazkii.quark.decoration.tile.TileCustomChest", new TransformerQuarkTile());

@@ -23,6 +23,7 @@ import javax.annotation.Nonnull;
  */
 @Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION, dependencies
 = "after:atum@[2.0.20,);"
++ "after:carryon@[1.12.3,);"
 + "after:quark@[r1.6-179,);")
 public final class FriendlyChests
 {
