@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) <2025 to Present> <jbredwards>
+ *
+ * All rights are reserved, except where explicitly granted by the original
+ * copyright holder or where explicitly granted by the Mod Permissions License as
+ * published by Jbredwards, either version 1 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE.
+ *
+ * See the Mod Permissions License for more details
+ * <https://www.github.com/jbredwards/mod-permissions-license>.
+ */
+
 package git.jbredwards.friendly_chests.mod.asm.transformers;
 
 import com.google.common.collect.Lists;
@@ -24,6 +40,11 @@ public interface IASMClassTransformer extends IClassTransformer, Opcodes
 {
     boolean DEOBFUSCATED = FMLLaunchHandler.isDeobfuscatedEnvironment();
     void transform(@Nonnull final ClassNode classNode);
+
+    @Nonnull
+    default String getHookClass() {
+        return getClass().getName().replace('.', '/') + "$Hooks";
+    }
 
     @Nonnull
     @Override
@@ -91,7 +112,7 @@ public interface IASMClassTransformer extends IClassTransformer, Opcodes
         }, method.access, method.name, method.desc);
 
         generator.accept(adapter);
-        adapter.invokeStatic(Type.getObjectType(getClass().getName().replace('.', '/') + "$Hooks"), new Method(deobfName, Type.getReturnType(desc), generatedHookDescriptor.toArray(new Type[0])));
+        adapter.invokeStatic(Type.getObjectType(getHookClass()), new Method(deobfName, Type.getReturnType(desc), generatedHookDescriptor.toArray(new Type[0])));
         adapter.returnValue();
         classNode.methods.add(method);
     }

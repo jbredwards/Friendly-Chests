@@ -1,0 +1,2 @@
+mod.friendly_chests.credits=\n- jbredwards: creator and maintainer\n- mczph: remove dependence to Fluidlogged API and improve build.gradle
+mod.friendly_chests.description=A Minecraft mod that lets chests stop social distancing!

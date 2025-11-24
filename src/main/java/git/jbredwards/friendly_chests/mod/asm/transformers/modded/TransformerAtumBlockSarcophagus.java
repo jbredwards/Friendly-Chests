@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) <2025 to Present> <jbredwards>
+ *
+ * All rights are reserved, except where explicitly granted by the original
+ * copyright holder or where explicitly granted by the Mod Permissions License as
+ * published by Jbredwards, either version 1 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE.
+ *
+ * See the Mod Permissions License for more details
+ * <https://www.github.com/jbredwards/mod-permissions-license>.
+ */
+
 package git.jbredwards.friendly_chests.mod.asm.transformers.modded;
 
 import com.teammetallurgy.atum.blocks.stone.limestone.chest.BlockSarcophagus;
@@ -47,7 +63,7 @@ public final class TransformerAtumBlockSarcophagus implements IASMClassTransform
          *
          * New code:
          * // Use state to find neighbor sarcophagus, instead of using all neighbors.
-         * for (EnumFacing horizontal : git.jbredwards.friendly_chests.api.ChestType.getDirectionsToAttached(this.world.getBlockState(sarcophagusPos)))
+         * for (EnumFacing horizontal : git.jbredwards.friendly_chests.api.ChestType.getDirectionsToAttached(state))
          * {
          *     ...
          * }
@@ -64,7 +80,7 @@ public final class TransformerAtumBlockSarcophagus implements IASMClassTransform
          *
          * New code:
          * // Use state to find neighbor sarcophagus, instead of using all neighbors.
-         * for (EnumFacing horizontal : git.jbredwards.friendly_chests.api.ChestType.getDirectionsToAttached(this.world.getBlockState(sarcophagusPos)))
+         * for (EnumFacing horizontal : git.jbredwards.friendly_chests.api.ChestType.getDirectionsToAttached(state))
          * {
          *     ...
          * }
