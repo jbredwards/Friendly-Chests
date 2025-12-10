@@ -50,11 +50,11 @@ public interface IASMClassTransformer extends IClassTransformer, Opcodes
     @Override
     default byte[] transform(@Nonnull final String name, @Nonnull final String transformedName, @Nonnull final byte[] basicClass) {
         @Nonnull final ClassNode classNode = new ClassNode();
-        new ClassReader(basicClass).accept(classNode, ClassReader.SKIP_FRAMES);
+        new ClassReader(basicClass).accept(classNode, 0);
         transform(classNode);
 
         // writes the changes
-        @Nonnull final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+        @Nonnull final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         classNode.accept(writer);
         return writer.toByteArray();
     }
